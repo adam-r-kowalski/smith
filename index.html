@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+
+    <title>Smith</title>
+
+    <link rel="stylesheet" href="dist/reset.css" />
+    <link rel="stylesheet" href="dist/reveal.css" />
+    <link rel="stylesheet" href="dist/theme/black.css" />
+
+    <!-- Theme used for syntax highlighted code -->
+    <link rel="stylesheet" href="plugin/highlight/monokai.css" />
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <!-- Slide 1 -->
+        <section data-background-color="rgb(2, 9, 21)">
+          <img src="assets/logo.webp" alt="Smith" width="200px" />
+          <h1>Smith</h1>
+          <p>Unleashing Neural Network Performance Across All Hardware</p>
+        </section>
+
+        <!-- Slide 2 -->
+        <section>
+          <h2>The Challenge</h2>
+          <ul>
+            <li>Diverse hardware ecosystems</li>
+            <li>Dominance of specific APIs like CUDA</li>
+            <li>Customers forced to rely on NVIDIA GPUs</li>
+          </ul>
+        </section>
+
+        <!-- Slide 3 -->
+        <section>
+          <h2>Current State of the Art</h2>
+          <ul>
+            <li>TensorFlow and PyTorch dominate</li>
+            <li>Rely on manually optimized kernels</li>
+            <li>High performance confined to specific platforms</li>
+          </ul>
+        </section>
+
+        <!-- Slide 4 -->
+        <section>
+          <h2>Introducing Smith</h2>
+          <ul>
+            <li>A single, open-source language</li>
+            <li>Compiles to CPU and GPU backends</li>
+            <li>Ensures optimal performance on all devices</li>
+            <li>Targets clients, servers, IoT devices, robots</li>
+          </ul>
+        </section>
+
+        <!-- Slide 5 -->
+        <section>
+          <h2>Roadmap and Milestones</h2>
+          <ul>
+            <li>Year 1: WebAssembly for CPU support</li>
+            <li>Year 2: WebGPU for GPU support</li>
+            <li>Future targets: XLA, LLVM, etc</li>
+          </ul>
+        </section>
+
+        <!-- Slide 6 -->
+        <section>
+          <h2>Funding Objectives</h2>
+          <ul>
+            <li>Funding goal: $10 million</li>
+            <li>Enable full-time development on Smith</li>
+            <li>Facilitate open source ecosystem</li>
+          </ul>
+        </section>
+
+        <!-- Slide 7 -->
+        <section>
+          <h2>Join Smith</h2>
+          <p>
+            Invest in the future of neural networks. Help diversify hardware
+            utilization in AI. Strengthen and expand market reach.
+          </p>
+        </section>
+      </div>
+    </div>
+
+    <script src="dist/reveal.js"></script>
+    <script src="plugin/notes/notes.js"></script>
+    <script src="plugin/markdown/markdown.js"></script>
+    <script src="plugin/highlight/highlight.js"></script>
+    <script>
+      // More info about initialization & config:
+      // - https://revealjs.com/initialization/
+      // - https://revealjs.com/config/
+      Reveal.initialize({
+        hash: true,
+
+        // Learn about plugins: https://revealjs.com/plugins/
+        plugins: [RevealMarkdown, RevealHighlight, RevealNotes],
+      });
+    </script>
+  </body>
+</html>
