@@ -20,6 +20,27 @@
       .reveal {
         background-color: rgb(2, 9, 21);
       }
+
+      #support-matrix {
+        margin-top: 40px;
+        font-size: 0.5em;
+      }
+
+      #support-matrix td {
+        text-align: center;
+      }
+
+      #market-share-chart-container {
+        display: flex;
+        justify-content: center;
+        max-width: 300px;
+        margin: 40px auto;
+      }
+
+      #smith-compilation-pipeline {
+        margin: 40px auto;
+        width: 100%;
+      }
     </style>
   </head>
   <body>
@@ -40,6 +61,9 @@
             <li>Dominance of specific APIs like CUDA</li>
             <li>Customers forced to rely on NVIDIA GPUs</li>
           </ul>
+          <div id="market-share-chart-container">
+            <canvas id="market-share-chart"></canvas>
+          </div>
         </section>
 
         <!-- Slide 3 -->
@@ -50,6 +74,75 @@
             <li>Rely on manually optimized kernels</li>
             <li>High performance confined to specific platforms</li>
           </ul>
+          <table id="support-matrix">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Nvidia</th>
+                <th>Amd</th>
+                <th>Intel</th>
+                <th>Huawei</th>
+                <th>...</th>
+                <th>Apple</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Kernel 1</td>
+                <td>✓</td>
+                <td>✓</td>
+                <td></td>
+                <td>✓</td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>Kernel 2</td>
+                <td>✓</td>
+                <td>✓</td>
+                <td></td>
+                <td>✓</td>
+                <td></td>
+                <td>✓</td>
+              </tr>
+              <tr>
+                <td>Kernel 3</td>
+                <td>✓</td>
+                <td></td>
+                <td>✓</td>
+                <td>✓</td>
+                <td></td>
+                <td>✓</td>
+              </tr>
+              <tr>
+                <td>Kernel 4</td>
+                <td>✓</td>
+                <td></td>
+                <td>✓</td>
+                <td></td>
+                <td></td>
+                <td>✓</td>
+              </tr>
+              <tr>
+                <td>...</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>Kernel N</td>
+                <td></td>
+                <td>✓</td>
+                <td>✓</td>
+                <td>✓</td>
+                <td></td>
+                <td>✓</td>
+              </tr>
+            </tbody>
+          </table>
         </section>
 
         <!-- Slide 4 -->
@@ -61,6 +154,180 @@
             <li>Ensures optimal performance on all devices</li>
             <li>Targets clients, servers, IoT devices, robots</li>
           </ul>
+
+          <svg
+            width="800"
+            height="200"
+            viewBox="0 0 800 200"
+            preserveAspectRatio="xMidYMid meet"
+            xmlns="http://www.w3.org/2000/svg"
+            id="smith-compilation-pipeline"
+          >
+            <!-- Arrowheads definition -->
+            <defs>
+              <marker
+                id="arrow"
+                markerWidth="10"
+                markerHeight="10"
+                refX="0"
+                refY="3"
+                orient="auto"
+                markerUnits="strokeWidth"
+              >
+                <path d="M0,0 L0,6 L9,3 z" fill="white" />
+              </marker>
+            </defs>
+
+            <!-- Lines with arrows -->
+            <line
+              x1="100"
+              y1="100"
+              x2="200"
+              y2="100"
+              stroke="white"
+              stroke-width="2"
+              marker-end="url(#arrow)"
+            />
+            <line
+              x1="300"
+              y1="100"
+              x2="400"
+              y2="100"
+              stroke="white"
+              stroke-width="2"
+              marker-end="url(#arrow)"
+            />
+            <line
+              x1="470"
+              y1="100"
+              x2="600"
+              y2="50"
+              stroke="white"
+              stroke-width="2"
+              marker-end="url(#arrow)"
+            />
+            <line
+              x1="470"
+              y1="100"
+              x2="600"
+              y2="80"
+              stroke="white"
+              stroke-width="2"
+              marker-end="url(#arrow)"
+            />
+            <line
+              x1="470"
+              y1="100"
+              x2="600"
+              y2="115"
+              stroke="white"
+              stroke-width="2"
+              marker-end="url(#arrow)"
+            />
+            <line
+              x1="470"
+              y1="100"
+              x2="600"
+              y2="150"
+              stroke="white"
+              stroke-width="2"
+              marker-end="url(#arrow)"
+            />
+
+            <!-- Text labels -->
+            <text
+              x="135"
+              y="90"
+              font-family="Verdana"
+              font-size="15"
+              fill="lightgray"
+            >
+              parse
+            </text>
+            <text
+              x="335"
+              y="90"
+              font-family="Verdana"
+              font-size="15"
+              fill="lightgray"
+            >
+              lower
+            </text>
+            <text
+              x="500"
+              y="50"
+              font-family="Verdana"
+              font-size="15"
+              fill="lightgray"
+            >
+              codegen
+            </text>
+
+            <!-- Nodes -->
+            <text
+              x="30"
+              y="105"
+              font-family="Verdana"
+              font-size="15"
+              fill="white"
+            >
+              Smith
+            </text>
+            <text
+              x="240"
+              y="105"
+              font-family="Verdana"
+              font-size="15"
+              fill="white"
+            >
+              AST
+            </text>
+            <text
+              x="435"
+              y="105"
+              font-family="Verdana"
+              font-size="15"
+              fill="white"
+            >
+              IR
+            </text>
+            <text
+              x="625"
+              y="50"
+              font-family="Verdana"
+              font-size="15"
+              fill="white"
+            >
+              Backend 1
+            </text>
+            <text
+              x="625"
+              y="85"
+              font-family="Verdana"
+              font-size="15"
+              fill="white"
+            >
+              Backend 2
+            </text>
+            <text
+              x="625"
+              y="120"
+              font-family="Verdana"
+              font-size="15"
+              fill="white"
+            >
+              ...
+            </text>
+            <text
+              x="625"
+              y="160"
+              font-family="Verdana"
+              font-size="15"
+              fill="white"
+            >
+              Backend N
+            </text>
+          </svg>
         </section>
 
         <!-- Slide 5 -->
@@ -98,6 +365,7 @@
     <script src="plugin/notes/notes.js"></script>
     <script src="plugin/markdown/markdown.js"></script>
     <script src="plugin/highlight/highlight.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
       // More info about initialization & config:
       // - https://revealjs.com/initialization/
@@ -107,6 +375,46 @@
 
         // Learn about plugins: https://revealjs.com/plugins/
         plugins: [RevealMarkdown, RevealHighlight, RevealNotes],
+      });
+
+      document.addEventListener("DOMContentLoaded", function () {
+        var ctx = document
+          .getElementById("market-share-chart")
+          .getContext("2d");
+        var marketShareChart = new Chart(ctx, {
+          type: "pie",
+          data: {
+            labels: ["NVIDIA", "Other"],
+            datasets: [
+              {
+                data: [90, 10],
+                backgroundColor: [
+                  "rgba(255, 99, 132, 0.8)",
+                  "rgba(54, 162, 235, 0.8)",
+                ],
+                borderColor: ["rgba(255, 99, 132, 1)", "rgba(54, 162, 235, 1)"],
+                borderWidth: 1,
+              },
+            ],
+          },
+
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            aspectRatio: 1,
+            plugins: {
+              legend: {
+                position: "top",
+                labels: {
+                  color: "white",
+                  font: {
+                    size: 14,
+                  },
+                },
+              },
+            },
+          },
+        });
       });
     </script>
   </body>
