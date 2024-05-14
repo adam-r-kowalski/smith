@@ -18,12 +18,20 @@
 
     <style>
       .reveal {
-        background-color: rgb(2, 9, 21);
+        background-color: rgb(2, 7, 20);
+      }
+
+      h1,
+      h2,
+      p,
+      ul,
+      li {
+        color: #e0e0e0;
       }
 
       #support-matrix {
         margin-top: 40px;
-        font-size: 0.5em;
+        font-size: 0.7em;
       }
 
       #support-matrix td {
@@ -355,9 +363,9 @@
         <section>
           <h2>Roadmap and Milestones</h2>
           <ul>
-            <li>Year 1: WebAssembly for CPU support</li>
-            <li>Year 2: WebGPU for GPU support</li>
-            <li>Future targets: XLA, LLVM, etc</li>
+            <li>Milestone 1: WebAssembly for CPU support</li>
+            <li>Milestone 2: Compile time automatic differentiation</li>
+            <li>Milestone 3: WebGPU for GPU support</li>
           </ul>
           <div id="web-logos">
             <img
@@ -374,8 +382,7 @@
           <h2>Funding Objectives</h2>
           <p>
             I am securing <strong>$1 million upfront</strong> to initiate the
-            development of Smith, focusing on integrating with WebAssembly and
-            WebGPU backends.
+            full time development of Smith.
           </p>
           <p>
             Additional funding will be provided based on the achievement of key
@@ -415,17 +422,27 @@
           .getElementById("market-share-chart")
           .getContext("2d");
         var marketShareChart = new Chart(ctx, {
-          type: "pie",
+          type: "bar",
           data: {
-            labels: ["NVIDIA", "Other"],
+            labels: ["NVIDIA", "AMD", "Intel", "Huawei", "Others"],
             datasets: [
               {
-                data: [90, 10],
+                label: "Market Share",
+                data: [80, 10, 5, 3, 2],
                 backgroundColor: [
                   "rgba(255, 99, 132, 0.8)",
                   "rgba(54, 162, 235, 0.8)",
+                  "rgba(255, 206, 86, 0.8)",
+                  "rgba(75, 192, 192, 0.8)",
+                  "rgba(153, 102, 255, 0.8)",
                 ],
-                borderColor: ["rgba(255, 99, 132, 1)", "rgba(54, 162, 235, 1)"],
+                borderColor: [
+                  "rgba(255, 99, 132, 1)",
+                  "rgba(54, 162, 235, 1)",
+                  "rgba(255, 206, 86, 1)",
+                  "rgba(75, 192, 192, 1)",
+                  "rgba(153, 102, 255, 1)",
+                ],
                 borderWidth: 1,
               },
             ],
@@ -433,8 +450,26 @@
 
           options: {
             responsive: true,
-            maintainAspectRatio: true,
-            aspectRatio: 1,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  color: "white",
+                  font: {
+                    size: 14,
+                  },
+                },
+              },
+              x: {
+                ticks: {
+                  color: "white",
+                  font: {
+                    size: 14,
+                  },
+                },
+              },
+            },
             plugins: {
               legend: {
                 position: "top",
