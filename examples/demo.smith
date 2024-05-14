@@ -1,0 +1,29 @@
+fn sum[T: Num, n: usize](xs: [n]T) -> T {
+    mut acc = 0
+    for i { acc += xs[i] }
+    acc
+}
+
+fn identity(T: Type, n: usize) -> [n, n]T {
+    for i, j { if i == j { 1 } else { 0 } }
+}
+
+fn transpose[T: Num, m: usize, n: usize](xs: [m, n]T) -> [n, m]T {
+    for i, j { xs[j][i] }
+}
+
+fn dot[T: Num, n: usize](xs: [n]T, ys: [n]T) -> T {
+    sum(for i { xs[i] * ys[i] })
+}
+
+fn matmul[T: Num, m: usize, n: usize](xs: [m, n]T, ys: [n, p]T) -> [m, p]T {
+    for i, j { dot(xs[i], ys[j]) }
+}
+
+fn column_sum[T: Num, m: usize, n: usize](xs: [m, n]T) -> [n]T {
+    for j { sum(for i { xs[i][j] }) }
+}
+
+fn row_sum[T: Num, m: usize, n: usize](xs: [m, n]T) -> [m]T {
+    for i { sum(for j { xs[i][j] }) }
+}
