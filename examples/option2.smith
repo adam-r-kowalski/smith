@@ -1,0 +1,33 @@
+trait Add[t] {
+  fn +(t, t) -> t
+  fn zero() -> t
+}
+
+trait Mul[t] {
+  fn *(t, t) -> t
+  fn one() -> t
+}
+
+fn sum[t: Add](xs: []t) -> t {
+  acc = 0
+  for i { acc += xs[i] }
+  acc
+}
+
+fn dot[t: Mul](xs: [n]t, ys: [n]t) -> t {
+  sum(for i { xs[i] * ys[i] })
+}
+
+fn transpose(xs: [m, n]t) -> [n, m]t {
+  for i, j { xs[j][i] }
+}
+
+for identity(T: type, m: usize) -> [m, m]T {
+  for i in 0:m, j in 0:m {
+    if i == j { 1 } else { 0 }
+  }
+}
+
+fn row_sum[t: Add](xs: [m, n]t) -> [m]t {
+  for i { sum(xs[i]) }
+}
