@@ -62,6 +62,16 @@
         gap: 40px;
         margin-top: 40px;
       }
+
+      #ide-features {
+        font-size: 1.5em;
+        margin-top: 20px;
+      }
+
+      #code-gen {
+        font-size: 1.5em;
+        margin-top: 20px;
+      }
     </style>
   </head>
   <body>
@@ -435,42 +445,52 @@
 
         <!-- Slide 9 -->
         <section>
-          <h2>Key Technology Stack</h2>
+          <h2>IDE Integration</h2>
           <ul>
             <li>
               <a href="https://tree-sitter.github.io/tree-sitter/"
                 >Tree-Sitter</a
-              >
-              can parse the Smith language and provide syntax highlighting
-              across all IDEs.
-            </li>
-            <li>
-              <a href="https://llvm.org/">LLVM</a> allows me to generate code
-              for various architectures including X86, X86-64, PowerPC,
-              PowerPC-64, ARM, Thumb, SPARC, Alpha, CellSPU, MIPS, MSP430,
-              SystemZ, WebAssembly, and XCore.
-            </li>
-            <li>
-              <a href="https://wgpu.rs/">wgpu</a> lets me generate graphics
-              using Vulkan, Metal, DirectX 12, OpenGL ES, WebGPU, and WebGL2.
-            </li>
-            <li>
-              <a href="https://github.com/openxla">OpenXLA</a> supports
-              generation for AWS Tranium & Inferentia, AMD GPU, Arm CPUs,
-              Cerebras WSE, Google TPU, Graphcore IPU, NVIDIA GPU, and x86 CPU.
-            </li>
-            <li>
+              >,
               <a href="https://microsoft.github.io/language-server-protocol/"
-                >Language Server Protocol (LSP)</a
-              >
-              provides features in every IDE such as go to definition, go to
-              references, autocomplete, and documentation.
-            </li>
-            <li>
+                >LSP</a
+              >,
               <a href="https://microsoft.github.io/debug-adapter-protocol/"
-                >Debug Adapter Protocol (DAP)</a
+                >DAP</a
               >
-              offers debugging and running your program and tests in every IDE.
+              provide comprehensive features in every IDE:
+              <ul id="ide-features">
+                <li>Syntax highlighting</li>
+                <li>Go to definition</li>
+                <li>Go to references</li>
+                <li>Autocomplete</li>
+                <li>Documentation</li>
+                <li>Debugging</li>
+                <li>Running your program and tests</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <!-- Slide 10 -->
+        <section>
+          <h2>Code Generation</h2>
+          <ul>
+            <li>
+              <a href="https://llvm.org/">LLVM</a>,
+              <a href="https://wgpu.rs/">wgpu</a>,
+              <a href="https://github.com/openxla">OpenXLA</a>
+              enable code generation for various architectures and graphics
+              APIs:
+              <ul id="code-gen">
+                <li>X86, X86-64, PowerPC, PowerPC-64</li>
+                <li>ARM, Thumb, SPARC, Alpha, CellSPU</li>
+                <li>MIPS, MSP430, SystemZ, WebAssembly, XCore</li>
+                <li>Vulkan, Metal, DirectX 12, OpenGL ES, WebGPU, WebGL2</li>
+                <li>
+                  AWS Tranium & Inferentia, AMD GPU, Arm CPUs, Cerebras WSE
+                </li>
+                <li>Google TPU, Graphcore IPU, NVIDIA GPU</li>
+              </ul>
             </li>
           </ul>
         </section>
