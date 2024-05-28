@@ -35,13 +35,21 @@ module.exports = grammar({
 
     identifier: () => /[a-zA-Z_][a-zA-Z0-9_]*/,
 
-    parameter: ($) => seq($.identifier, ":", $.identifier),
+    parameter: ($) =>
+      seq(field("name", $.identifier), ":", field("type", $.expression)),
 
     parameter_list: ($) => seq("(", optional(commaSep($.parameter)), ")"),
 
     block: ($) => seq("{", repeat($.expression), "}"),
 
     function_definition: ($) =>
-      seq("fn", $.identifier, $.parameter_list, "->", $.identifier, $.block),
+      seq(
+        "fn",
+        field("name", $.identifier),
+        field("parameters", $.parameter_list),
+        "->",
+        field("return_type", $.expression),
+        field("body", $.block),
+      ),
   },
 });

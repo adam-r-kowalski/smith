@@ -11,9 +11,33 @@ fn forty_two() -> i32 {
 (source_file
   (expression
     (function_definition
-      (identifier)
-      (parameter_list)
-      (identifier)
-      (block
+      name: (identifier)
+      parameters: (parameter_list)
+      return_type: (expression (identifier))
+      body: (block
         (expression
           (integer))))))
+
+
+==================
+Single Parameter Function
+==================
+
+fn id(x: i32) -> i32 {
+    x
+}
+
+---
+
+(source_file
+  (expression
+    (function_definition
+      name: (identifier)
+      parameters: (parameter_list
+        (parameter
+          name: (identifier)
+          type: (expression (identifier))))
+      return_type: (expression (identifier))
+      body: (block
+        (expression
+          (identifier))))))
