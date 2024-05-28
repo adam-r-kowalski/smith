@@ -80,3 +80,20 @@ Character
     (character))
   (expression
     (character)))
+
+
+==================
+Identifier
+==================
+
+foo bar baz
+
+---
+
+(source_file
+  (expression
+    (identifier))
+  (expression
+    (identifier))
+  (expression
+    (identifier)))

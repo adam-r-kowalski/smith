@@ -1,0 +1,19 @@
+==================
+Constant Function
+==================
+
+fn forty_two() -> i32 {
+    42
+}
+
+---
+
+(source_file
+  (expression
+    (function_definition
+      (identifier)
+      (parameter_list)
+      (identifier)
+      (block
+        (expression
+          (integer))))))
