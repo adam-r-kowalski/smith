@@ -1,0 +1,82 @@
+==================
+Integer
+==================
+
+42 100 999
+
+---
+
+(source_file
+  (expression
+    (integer))
+  (expression
+    (integer))
+  (expression
+    (integer)))
+
+
+==================
+Float
+==================
+
+3.14 6.28 9.42
+
+---
+
+(source_file
+  (expression
+    (float))
+  (expression
+    (float))
+  (expression
+    (float)))
+
+
+==================
+String
+==================
+
+"hello" "world" "test"
+
+---
+
+(source_file
+  (expression
+    (string))
+  (expression
+    (string))
+  (expression
+    (string)))
+
+
+==================
+Boolean
+==================
+
+true false
+
+---
+
+(source_file
+  (expression
+    (boolean))
+  (expression
+    (boolean)))
+
+
+
+==================
+Character
+==================
+
+'a' 'b' 'c'
+
+---
+
+(source_file
+  (expression
+    (character))
+  (expression
+    (character))
+  (expression
+    (character)))
