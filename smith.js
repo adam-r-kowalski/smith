@@ -11,6 +11,7 @@
  *          | { int: string }
  *          | { float: string }
  *          | { delimiter: string }
+ *          | { invalid: string }
  *          } Token
  * @typedef {Token[]} Tokens
  * @typedef {{code: string, expected: Tokens}} UnitTest
@@ -19,7 +20,6 @@
 /**
  * @param {string} code
  * @return {Tokens}
- * @throws {Error} If an unexpected character is encountered.
  */
 function tokenize(code) {
   /** @type {Tokens} */
@@ -42,12 +42,9 @@ function tokenize(code) {
  * @param {string} buffer
  * @param {Tokens} tokens
  * @return {[State, string]} The new state and updated buffer.
- * @throws {Error} If the state is invalid or unhandled.
  */
 function handleState(state, char, buffer, tokens) {
   switch (state) {
-    case "start":
-      return handleStart(char, buffer, tokens);
     case "int":
       return handleInt(char, buffer, tokens);
     case "float":
@@ -55,7 +52,7 @@ function handleState(state, char, buffer, tokens) {
     case "symbol":
       return handleSymbol(char, buffer, tokens);
     default:
-      throw new Error(`Unhandled state: ${state}`);
+      return handleStart(char, buffer, tokens);
   }
 }
 
@@ -64,7 +61,6 @@ function handleState(state, char, buffer, tokens) {
  * @param {string} buffer
  * @param {Tokens} tokens
  * @return {[State, string]} The new state and updated buffer.
- * @throws {Error} If an unexpected character is encountered.
  */
 function handleStart(char, buffer, tokens) {
   if (/\d/.test(char)) return ["int", buffer + char];
@@ -78,7 +74,8 @@ function handleStart(char, buffer, tokens) {
     return ["start", buffer];
   }
   if (/\s/.test(char)) return ["start", buffer]; // Ignore whitespace
-  throw new Error(`Unexpected character: ${char}`);
+  tokens.push({ invalid: char });
+  return ["start", buffer];
 }
 
 /**
@@ -217,6 +214,29 @@ const unitTests = [
       { delimiter: "," },
       { symbol: "z" },
       { delimiter: ")" },
+    ],
+  },
+  {
+    code: "[1, 2, 3]",
+    expected: [
+      { delimiter: "[" },
+      { int: "1" },
+      { delimiter: "," },
+      { int: "2" },
+      { delimiter: "," },
+      { int: "3" },
+      { delimiter: "]" },
+    ],
+  },
+  {
+    code: "{ a: 1, b: 2 }",
+    expected: [
+      { delimiter: "{" },
+      { symbol: "a" },
+      { delimiter: ":" },
+      { symbol: "b" },
+      { int: "2" },
+      { delimiter: "}" },
     ],
   },
 ];
