@@ -57,9 +57,9 @@ function viewUnitTest(unitTest) {
   const tokens = tokenize(unitTest.code);
   return html`
     <tr>
-      <td>${unitTest.code}</td>
-      <td>${tokens}</td>
-      <td>${unitTest.expected}</td>
+      <td><pre><code>${unitTest.code}</code></pre></td>
+      <td><pre><code>${formatTokens(tokens)}</code></pre></td>
+      <td><pre><code>${formatTokens(unitTest.expected)}</code></pre></td>
     </tr>
   `;
 }

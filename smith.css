@@ -1,10 +1,10 @@
 :root {
   --background-color: #1e1e2e;
   --text-color: #e0e0e0;
-  --outline-focus-color: #89dceb;
-  --outline-default-color: #4c4f69;
-  --outline-thickness: 2px;
-  --border-radius: 0.5rem;
+  --border-color: #444444;
+  --header-bg: #2a2a3a;
+  --row-hover: #2f2f3f;
+  --code-bg: #252535;
 }
 
 * {
@@ -17,40 +17,53 @@ body {
   background-color: var(--background-color);
   color: var(--text-color);
   font-family: monospace;
-  padding: 0.5rem;
+  padding: 1rem;
 }
 
-[contenteditable] {
-  outline: var(--outline-thickness) solid var(--outline-default-color);
-  padding: 0.5rem;
-  border-radius: var(--border-radius);
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  background-color: var(--background-color);
+  border: 1px solid var(--border-color);
 }
 
-[contenteditable]:focus {
-  outline-color: var(--outline-focus-color);
+th {
+  background-color: var(--header-bg);
+  padding: 1rem;
+  text-align: left;
+  font-weight: bold;
+  border-bottom: 2px solid var(--border-color);
 }
 
-.unit-test {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.5rem;
+td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: top;
 }
 
-.passing {
-  outline: var(--outline-thickness) solid green;
+tr:hover {
+  background-color: var(--row-hover);
 }
 
-.failing {
-  outline: var(--outline-thickness) solid red;
+pre {
+  background-color: var(--code-bg);
+  padding: 0.75rem;
+  border-radius: 4px;
+  overflow-x: auto;
 }
 
-.actual, .expected {
-  border-radius: var(--border-radius);
-  padding: 0.5rem;
+code {
+  font-family: 'Consolas', 'Monaco', monospace;
 }
 
-.unit-tests {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+/* First column (Code) styling */
+td:first-child pre {
+  min-width: 80px;
+}
+
+/* Second and third columns (Tokens & Expected) styling */
+td:nth-child(2) pre,
+td:nth-child(3) pre {
+  min-width: 200px;
 }
