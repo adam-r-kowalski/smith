@@ -1,5 +1,11 @@
 /**
- * @typedef {'start' | 'symbol' | 'int' | 'float' | 'operator' | 'delimiter'} State
+ * @typedef { 'start'
+ *          | 'symbol'
+ *          | 'int'
+ *          | 'float'
+ *          | 'operator'
+ *          | 'delimiter'
+ *          } State
  * @typedef { { symbol: string }
  *          | { operator: string }
  *          | { int: string }
@@ -11,7 +17,6 @@
  */
 
 /**
- * Main tokenize function that processes the input string.
  * @param {string} code
  * @return {Tokens}
  * @throws {Error} If an unexpected character is encountered.
@@ -22,21 +27,16 @@ function tokenize(code) {
   /** @type {State} */
   let state = "start";
   let buffer = "";
-
   for (const char of code) {
     const [newState, newBuffer] = handleState(state, char, buffer, tokens);
     state = newState;
     buffer = newBuffer;
   }
-
-  // Flush any remaining buffer
   flushBuffer(state, buffer, tokens);
-
   return tokens;
 }
 
 /**
- * Handles the current state and transitions based on the input character.
  * @param {State} state
  * @param {string} char
  * @param {string} buffer
@@ -60,7 +60,6 @@ function handleState(state, char, buffer, tokens) {
 }
 
 /**
- * Handles the `start` state.
  * @param {string} char
  * @param {string} buffer
  * @param {Tokens} tokens
@@ -68,85 +67,67 @@ function handleState(state, char, buffer, tokens) {
  * @throws {Error} If an unexpected character is encountered.
  */
 function handleStart(char, buffer, tokens) {
-  if (/\d/.test(char)) {
-    return ["int", buffer + char];
-  } else if (/[a-zA-Z_]/.test(char)) {
-    return ["symbol", buffer + char];
-  } else if (/[+\-*\/]/.test(char)) {
+  if (/\d/.test(char)) return ["int", buffer + char];
+  if (/[a-zA-Z_]/.test(char)) return ["symbol", buffer + char];
+  if (/[+\-*\/]/.test(char)) {
     tokens.push({ operator: char });
     return ["start", buffer];
-  } else if (/[\[\]\(\)\{\},]/.test(char)) {
+  }
+  if (/[\[\]\(\)\{\},]/.test(char)) {
     tokens.push({ delimiter: char });
     return ["start", buffer];
-  } else if (/\s/.test(char)) {
-    return ["start", buffer]; // Ignore whitespace
-  } else {
-    throw new Error(`Unexpected character: ${char}`);
   }
+  if (/\s/.test(char)) return ["start", buffer]; // Ignore whitespace
+  throw new Error(`Unexpected character: ${char}`);
 }
 
 /**
- * Handles the `int` state.
  * @param {string} char
  * @param {string} buffer
  * @param {Tokens} tokens
  * @return {[State, string]} The new state and updated buffer.
  */
 function handleInt(char, buffer, tokens) {
-  if (/\d/.test(char)) {
-    return ["int", buffer + char];
-  } else if (char === ".") {
-    return ["float", buffer + char];
-  } else {
-    flushBuffer("int", buffer, tokens);
-    return handleStart(char, "", tokens);
-  }
+  if (/\d/.test(char)) return ["int", buffer + char];
+  if (char === ".") return ["float", buffer + char];
+  flushBuffer("int", buffer, tokens);
+  return handleStart(char, "", tokens);
 }
 
 /**
- * Handles the `float` state.
  * @param {string} char
  * @param {string} buffer
  * @param {Tokens} tokens
  * @return {[State, string]} The new state and updated buffer.
  */
 function handleFloat(char, buffer, tokens) {
-  if (/\d/.test(char)) {
-    return ["float", buffer + char];
-  } else {
-    flushBuffer("float", buffer, tokens);
-    return handleStart(char, "", tokens);
-  }
+  if (/\d/.test(char)) return ["float", buffer + char];
+  flushBuffer("float", buffer, tokens);
+  return handleStart(char, "", tokens);
 }
 
 /**
- * Handles the `symbol` state.
  * @param {string} char
  * @param {string} buffer
  * @param {Tokens} tokens
  * @return {[State, string]} The new state and updated buffer.
  */
 function handleSymbol(char, buffer, tokens) {
-  if (/[\w]/.test(char)) {
-    return ["symbol", buffer + char];
-  } else {
-    flushBuffer("symbol", buffer, tokens);
-    return handleStart(char, "", tokens);
-  }
+  if (/[\w]/.test(char)) return ["symbol", buffer + char];
+  flushBuffer("symbol", buffer, tokens);
+  return handleStart(char, "", tokens);
 }
 
 /**
- * Flushes the buffer and adds a token to the token list.
  * @param {State} state
  * @param {string} buffer
  * @param {Tokens} tokens
  */
 function flushBuffer(state, buffer, tokens) {
-  if (buffer) {
-    if (state === "int") tokens.push({ int: buffer });
-    else if (state === "float") tokens.push({ float: buffer });
-    else if (state === "symbol") tokens.push({ symbol: buffer });
-  }
+  if (!buffer) return;
+  if (state === "int") tokens.push({ int: buffer });
+  else if (state === "float") tokens.push({ float: buffer });
+  else if (state === "symbol") tokens.push({ symbol: buffer });
 }
 
 /**
@@ -157,25 +138,28 @@ function flushBuffer(state, buffer, tokens) {
 function formatTokens(tokens) {
   if (tokens.length === 0) return "[]";
   if (tokens.length === 1) return `[ ${JSON.stringify(tokens[0])} ]`;
-  return (
-    "[\n" + tokens.map((t) => "  " + JSON.stringify(t)).join(",\n") + "\n]"
-  );
+  const mapped = tokens.map((t) => "  " + JSON.stringify(t)).join(",\n");
+  return "[\n" + mapped + "\n]";
 }
 
 /**
- * Compares actual and expected tokens for equality.
+ * @param {TemplateStringsArray} strings
+ * @param {...any} values
+ * @returns {string}
+ */
+function html(strings, ...values) {
+  return String.raw({ raw: strings }, ...values);
+}
+
+/**
  * @param {Tokens} actual
  * @param {Tokens} expected
- * @return {boolean}
+ * @return {string}
  */
 function compareTokens(actual, expected) {
-  return (
-    actual.length === expected.length &&
-    actual.every(
-      (token, index) =>
-        JSON.stringify(token) === JSON.stringify(expected[index]),
-    )
-  );
+  return JSON.stringify(actual) === JSON.stringify(expected)
+    ? "match"
+    : "mismatch";
 }
 
 /**
@@ -185,9 +169,8 @@ function compareTokens(actual, expected) {
  */
 function viewUnitTest(unitTest) {
   const tokens = tokenize(unitTest.code);
-  const matches = compareTokens(tokens, unitTest.expected);
-  return `
-    <tr class="${matches ? "match" : "mismatch"}">
+  return html`
+    <tr class="${compareTokens(tokens, unitTest.expected)}">
       <td><pre>${unitTest.code}</pre></td>
       <td><pre>${formatTokens(tokens)}</pre></td>
       <td><pre>${formatTokens(unitTest.expected)}</pre></td>
