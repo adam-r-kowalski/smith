@@ -4,8 +4,278 @@
     <title>Smith</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="smith.js" defer></script>
-    <link rel="stylesheet" href="smith.css"></script>
+    <script>
+      /**
+       * @typedef {{ row: number, col: number }} Position
+       * @typedef {{ start: Position, end: Position }} Span
+       * @typedef {{ type: string, value: string }} Token
+       * @typedef {{ token: Token, span: Span }} TokenWithSpan
+       * @typedef {{ code: string, pos: Position }} CodeState
+       */
+
+      /**
+       * @param {Position} pos
+       * @param {string} char
+       * @returns {Position}
+       */
+      function advancePosition(pos, char) {
+        if (char === "\n") return { row: pos.row + 1, col: 0 };
+        return { row: pos.row, col: pos.col + 1 };
+      }
+
+      /**
+       * @param {CodeState} state
+       * @returns {[TokenWithSpan|null, CodeState]}
+       */
+      function nextToken(state) {
+        if (!state.code) return [null, state];
+
+        const char = state.code[0];
+        const startPos = state.pos;
+        let nextState = {
+          code: state.code.slice(1),
+          pos: advancePosition(state.pos, char),
+        };
+
+        if (/\s/.test(char)) return nextToken(nextState);
+
+        if (/[+\-*\/]/.test(char)) {
+          return [
+            {
+              token: { type: "operator", value: char },
+              span: { start: startPos, end: nextState.pos },
+            },
+            nextState,
+          ];
+        }
+
+        if (/[\[\]\(\)\{\},:]/.test(char)) {
+          return [
+            {
+              token: { type: "delimiter", value: char },
+              span: { start: startPos, end: nextState.pos },
+            },
+            nextState,
+          ];
+        }
+
+        if (/\d/.test(char)) return readNumber(nextState, char, startPos);
+        if (/[a-zA-Z_]/.test(char)) return readSymbol(nextState, char, startPos);
+
+        return [
+          {
+            token: { type: "invalid", value: char },
+            span: { start: startPos, end: nextState.pos },
+          },
+          nextState,
+        ];
+      }
+
+      /**
+       * @param {CodeState} state
+       * @param {string} initial
+       * @param {Position} startPos
+       * @returns {[TokenWithSpan, CodeState]}
+       */
+      function readNumber(state, initial, startPos) {
+        let value = initial;
+        let currentState = state;
+        let seenDot = false;
+
+        while (currentState.code) {
+          const char = currentState.code[0];
+          if (char === "." && !seenDot) {
+            seenDot = true;
+            value += char;
+          } else if (/\d/.test(char)) {
+            value += char;
+          } else {
+            break;
+          }
+
+          currentState = {
+            code: currentState.code.slice(1),
+            pos: advancePosition(currentState.pos, char),
+          };
+        }
+
+        return [
+          {
+            token: { type: seenDot ? "float" : "int", value },
+            span: { start: startPos, end: currentState.pos },
+          },
+          currentState,
+        ];
+      }
+
+      /**
+       * @param {CodeState} state
+       * @param {string} initial
+       * @param {Position} startPos
+       * @returns {[TokenWithSpan, CodeState]}
+       */
+      function readSymbol(state, initial, startPos) {
+        let value = initial;
+        let currentState = state;
+
+        while (currentState.code) {
+          const char = currentState.code[0];
+          if (!/[\w]/.test(char)) break;
+          value += char;
+          currentState = {
+            code: currentState.code.slice(1),
+            pos: advancePosition(currentState.pos, char),
+          };
+        }
+
+        return [
+          {
+            token: { type: "symbol", value },
+            span: { start: startPos, end: currentState.pos },
+          },
+          currentState,
+        ];
+      }
+
+      /**
+       * @param {string} code
+       * @returns {TokenWithSpan[]}
+       */
+      function tokenize(code) {
+        const tokens = [];
+        let state = { code, pos: { row: 0, col: 0 } };
+
+        while (state.code) {
+          const [token, nextState] = nextToken(state);
+          if (!token) break;
+          tokens.push(token);
+          state = nextState;
+        }
+
+        return tokens;
+      }
+
+      /**
+       * @param {TokenWithSpan[]} tokens
+       * @returns {string}
+       */
+      function formatTokens(tokens) {
+        if (tokens.length === 0) return "[]";
+        const mapped = tokens
+          .map(
+            (t) =>
+              `  {\n    token: ${JSON.stringify(t.token)},\n    span: ${JSON.stringify(t.span)}\n  }`,
+          )
+          .join(",\n");
+        return "[\n" + mapped + "\n]";
+      }
+
+      // Unit tests
+      const tests = [
+        { code: "x + 1", desc: "Simple expression" },
+        { code: "foo(123, 45.67)", desc: "Function call" },
+        { code: "if (x > 0) { return 1 }", desc: "Control flow" },
+        { code: "array[i]", desc: "Array access" },
+        { code: "  spaces  \n and\n\nnewlines  ", desc: "Whitespace handling" },
+      ];
+
+      window.addEventListener("load", (event) => {
+        document.body.innerHTML = `
+          <style>
+            body { font-family: monospace; padding: 20px; }
+            .test { margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; }
+            .code { background: #f0f0f0; padding: 10px; margin: 5px 0; }
+            .tokens { white-space: pre; }
+          </style>
+          ${tests
+            .map(
+              (test) => `
+            <div class="test">
+              <h3>${test.desc}</h3>
+              <div class="code">${test.code}</div>
+              <div class="tokens">${formatTokens(tokenize(test.code))}</div>
+            </div>
+          `,
+            )
+            .join("")}
+        `;
+      });
+    </script>
+    <style>
+      :root {
+        --background-color: #1e1e2e;
+        --text-color: #e0e0e0;
+        --border-color: #444444;
+        --header-bg: #2a2a3a;
+        --code-bg: #000000;
+        --success-border: #00ff9550;
+        --error-border: #ff000050;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background-color: var(--background-color);
+        color: var(--text-color);
+        font-family: monospace;
+        padding: 1rem;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin: 1rem 0;
+        background-color: var(--background-color);
+        border: 1px solid var(--border-color);
+      }
+
+      th {
+        background-color: var(--header-bg);
+        padding: 1rem;
+        text-align: left;
+        font-weight: bold;
+        border-bottom: 2px solid var(--border-color);
+      }
+
+      td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-color);
+        vertical-align: top;
+      }
+
+      tr.match {
+        background-color: var(--success-border);
+      }
+
+      tr.mismatch {
+        background-color: var(--error-border);
+      }
+
+      pre {
+        background-color: var(--code-bg);
+        padding: 0.75rem;
+        border-radius: 4px;
+        overflow-x: auto;
+      }
+
+      code {
+        font-family: 'Consolas', 'Monaco', monospace;
+      }
+
+      td:first-child pre {
+        min-width: 80px;
+      }
+
+      td:nth-child(2) pre,
+      td:nth-child(3) pre {
+        min-width: 200px;
+      }
+    </style>
   </head>
   <body>
   </body>
