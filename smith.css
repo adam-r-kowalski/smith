@@ -3,8 +3,9 @@
   --text-color: #e0e0e0;
   --border-color: #444444;
   --header-bg: #2a2a3a;
-  --row-hover: #2f2f3f;
   --code-bg: #252535;
+  --success-border: #00ff9550;
+  --error-border: #ff000050;
 }
 
 * {
@@ -22,7 +23,8 @@ body {
 
 table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   margin: 1rem 0;
   background-color: var(--background-color);
   border: 1px solid var(--border-color);
@@ -42,8 +44,12 @@ td {
   vertical-align: top;
 }
 
-tr:hover {
-  background-color: var(--row-hover);
+tr.match {
+  background-color: var(--success-border);
+}
+
+tr.mismatch {
+  background-color: var(--error-border);
 }
 
 pre {
@@ -57,12 +63,10 @@ code {
   font-family: 'Consolas', 'Monaco', monospace;
 }
 
-/* First column (Code) styling */
 td:first-child pre {
   min-width: 80px;
 }
 
-/* Second and third columns (Tokens & Expected) styling */
 td:nth-child(2) pre,
 td:nth-child(3) pre {
   min-width: 200px;

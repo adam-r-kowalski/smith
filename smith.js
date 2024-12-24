@@ -50,13 +50,26 @@ function formatTokens(tokens) {
 }
 
 /**
+ * @param {Tokens} actual
+ * @param {Tokens} expected
+ * @returns {boolean}
+ */
+function compareTokens(actual, expected) {
+  if (actual.length !== expected.length) return false;
+  return actual.every((token, index) => 
+    JSON.stringify(token) === JSON.stringify(expected[index])
+  );
+}
+
+/**
  * @param {UnitTest} unitTest
  * @return {string}
  */
 function viewUnitTest(unitTest) {
   const tokens = tokenize(unitTest.code);
+  const matches = compareTokens(tokens, unitTest.expected);
   return html`
-    <tr>
+    <tr class="${matches ? 'match' : 'mismatch'}">
       <td><pre><code>${unitTest.code}</code></pre></td>
       <td><pre><code>${formatTokens(tokens)}</code></pre></td>
       <td><pre><code>${formatTokens(unitTest.expected)}</code></pre></td>
