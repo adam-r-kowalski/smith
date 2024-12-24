@@ -1,0 +1,56 @@
+:root {
+  --background-color: #1e1e2e;
+  --text-color: #e0e0e0;
+  --outline-focus-color: #89dceb;
+  --outline-default-color: #4c4f69;
+  --outline-thickness: 2px;
+  --border-radius: 0.5rem;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  font-family: monospace;
+  padding: 0.5rem;
+}
+
+[contenteditable] {
+  outline: var(--outline-thickness) solid var(--outline-default-color);
+  padding: 0.5rem;
+  border-radius: var(--border-radius);
+}
+
+[contenteditable]:focus {
+  outline-color: var(--outline-focus-color);
+}
+
+.unit-test {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.passing {
+  outline: var(--outline-thickness) solid green;
+}
+
+.failing {
+  outline: var(--outline-thickness) solid red;
+}
+
+.actual, .expected {
+  border-radius: var(--border-radius);
+  padding: 0.5rem;
+}
+
+.unit-tests {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
