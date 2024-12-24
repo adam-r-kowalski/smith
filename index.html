@@ -3,189 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Runner</title>
+    <title>Smith</title>
     <style>
         body {
-            background-color: #1e1e2e; /* Catppuccin base color */
-            color: #cdd6f4; /* Light text color */
+            background-color: #1e1e2e;
+            color: #cdd6f4;
             font-family: "Fira Code", monospace;
+        }
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
-        .container {
-            padding: 20px;
+        .passing {
+            border: 2px solid #a6e3a1;
         }
-        .test-case {
-            margin-bottom: 20px;
-            padding: 15px;
-            background-color: #313244; /* Panel background */
-            border-radius: 8px;
+        .failing {
+            border: 2px solid #f38ba8;
         }
-        .test-title {
-            font-size: 1.4em;
-            color: #fab387; /* Catppuccin orange */
-            margin-bottom: 10px;
+        .symbol {
+            color: #89b4fa;
         }
-        .code-block {
-            background-color: #45475a;
-            padding: 10px;
-            border-radius: 8px;
-            font-family: "Fira Code", monospace;
-            color: #cdd6f4;
-            margin-bottom: 15px;
-            white-space: pre-wrap;
+        .string {
+            color: #a6e3a1;
         }
-        .token-container {
+        .int {
+            color: #f9e2af;
+        }
+        .line {
             display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
         }
-        .token {
-            display: flex;
-            flex-direction: column;
-            padding: 10px;
-            background-color: #45475a; /* Token background */
-            border-radius: 8px;
-            flex: 1 1 calc(25% - 20px); /* Responsive width */
-            box-sizing: border-box;
-            min-width: 150px;
-            max-width: 300px;
-        }
-        .token.passing {
-            border: 2px solid #a6e3a1; /* Green for passing */
-        }
-        .token.failing {
-            border: 2px solid #f38ba8; /* Pink for failing */
-        }
-        .token-type {
-            font-weight: bold;
-            color: #89b4fa; /* Catppuccin blue */
-        }
-        .token-value {
-            margin: 5px 0;
-            color: #a6e3a1; /* Catppuccin green */
-        }
-        .token-span {
-            font-size: 0.9em;
-            color: #f9e2af; /* Catppuccin yellow */
+        .space {
+            width: 1ch;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Example Test Case: Simple Expression -->
-        <div class="test-case">
-            <div class="test-title">Simple Expression</div>
-            <div class="code-block">x + 17</div>
-            <div class="token-container">
-                <div class="token passing">
-                    <div class="token-type">Symbol</div>
-                    <div class="token-value">x</div>
-                    <div class="token-span">Position(row=0, col=1)</div>
+    <ul>
+        <li>
+            <h2>Addition</h2>
+            <pre><code>x + 17</code></pre>
+            <div>
+                <div class="line">
+                    <span class="delimiter">[</span>
                 </div>
-                <div class="token passing">
-                    <div class="token-type">Operator</div>
-                    <div class="token-value">+</div>
-                    <div class="token-span">Position(row=0, col=3)</div>
+                <div class="line">
+                    <span class="space"></span>
+                    <span class="space"></span>
+                    <span class="symbol">Symbol</span>
+                    <span class="delimiter">(</span>
+                    <span class="string">"x"</span>
+                    <span class="delimiter">,</span>
+                    <span class="space"></span>
+                    <span class="delimiter">(</span>
+                    <span class="int">0</span>
+                    <span class="delimiter">,</span> 
+                    <span class="space"></span>
+                    <span class="int">1</span>
+                    <span class="delimiter">)</span>
+                    <span class="delimiter">)</span>
+                    <span class="delimiter">,</span>
                 </div>
-                <div class="token passing">
-                    <div class="token-type">Int</div>
-                    <div class="token-value">17</div>
-                    <div class="token-span">Position(row=0, col=5)</div>
+                <div class="line">
+                    <span class="space"></span>
+                    <span class="space"></span>
+                    <span class="symbol">Operator</span>
+                    <span class="delimiter">(</span>
+                    <span class="string">"+"</span>
+                    <span class="delimiter">,</span>
+                    <span class="space"></span>
+                    <span class="delimiter">(</span>
+                    <span class="int">0</span>
+                    <span class="delimiter">,</span>
+                    <span class="space"></span>
+                    <span class="int">3</span>
+                    <span class="delimiter">)</span>
+                    <span class="delimiter">)</span>
+                    <span class="delimiter">,</span>
                 </div>
-            </div>
-        </div>
-
-        <!-- Example Test Case: Function Call -->
-        <div class="test-case">
-            <div class="test-title">Function Call</div>
-            <div class="code-block">foo(123, 45.67)</div>
-            <div class="token-container">
-                <div class="token passing">
-                    <div class="token-type">Symbol</div>
-                    <div class="token-value">foo</div>
-                    <div class="token-span">Position(row=0, col=3)</div>
+                <div class="line">
+                    <span class="space"></span>
+                    <span class="space"></span>
+                    <span class="symbol">Int</span>
+                    <span class="delimiter">(</span>
+                    <span class="string">"17"</span>
+                    <span class="delimiter">,</span>
+                    <span class="space"></span>
+                    <span class="delimiter">(</span>
+                    <span class="int">0</span>
+                    <span class="delimiter">,</span>
+                    <span class="space"></span>
+                    <span class="int">5</span>
+                    <span class="delimiter">)</span>
+                    <span class="delimiter">)</span>
                 </div>
-                <div class="token passing">
-                    <div class="token-type">Delimiter</div>
-                    <div class="token-value">(</div>
-                    <div class="token-span">Position(row=0, col=4)</div>
-                </div>
-                <div class="token passing">
-                    <div class="token-type">Int</div>
-                    <div class="token-value">123</div>
-                    <div class="token-span">Position(row=0, col=7)</div>
-                </div>
-                <div class="token passing">
-                    <div class="token-type">Delimiter</div>
-                    <div class="token-value">,</div>
-                    <div class="token-span">Position(row=0, col=8)</div>
-                </div>
-                <div class="token passing">
-                    <div class="token-type">Float</div>
-                    <div class="token-value">45.67</div>
-                    <div class="token-span">Position(row=0, col=14)</div>
-                </div>
-                <div class="token passing">
-                    <div class="token-type">Delimiter</div>
-                    <div class="token-value">)</div>
-                    <div class="token-span">Position(row=0, col=15)</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Example Test Case: Control Flow -->
-        <div class="test-case">
-            <div class="test-title">Control Flow</div>
-            <div class="code-block">if x > 0: "positive" else: "negative"</div>
-            <div class="token-container">
-                <div class="token passing">
-                    <div class="token-type">Keyword</div>
-                    <div class="token-value">if</div>
-                    <div class="token-span">Position(row=0, col=2)</div>
-                </div>
-                <div class="token passing">
-                    <div class="token-type">Symbol</div>
-                    <div class="token-value">x</div>
-                    <div class="token-span">Position(row=0, col=4)</div>
-                </div>
-                <div class="token passing">
-                    <div class="token-type">Operator</div>
-                    <div class="token-value">></div>
-                    <div class="token-span">Position(row=0, col=6)</div>
-                </div>
-                <div class="token passing">
-                    <div class="token-type">Int</div>
-                    <div class="token-value">0</div>
-                    <div class="token-span">Position(row=0, col=8)</div>
-                </div>
-                <div class="token passing">
-                    <div class="token-type">Delimiter</div>
-                    <div class="token-value">:</div>
-                    <div class="token-span">Position(row=0, col=9)</div>
-                </div>
-                <div class="token passing">
-                    <div class="token-type">String</div>
-                    <div class="token-value">"positive"</div>
-                    <div class="token-span">Position(row=0, col=19)</div>
-                </div>
-                <div class="token passing">
-                    <div class="token-type">Keyword</div>
-                    <div class="token-value">else</div>
-                    <div class="token-span">Position(row=0, col=24)</div>
-                </div>
-                <div class="token passing">
-                    <div class="token-type">Delimiter</div>
-                    <div class="token-value">:</div>
-                    <div class="token-span">Position(row=0, col=25)</div>
-                </div>
-                <div class="token passing">
-                    <div class="token-type">String</div>
-                    <div class="token-value">"negative"</div>
-                    <div class="token-span">Position(row=0, col=35)</div>
+                <div class="line">
+                    <span class="delimiter">]</span>
                 </div>
             </div>
-        </div>
-    </div>
+        </li>
+    </ul>
 </body>
 </html>
