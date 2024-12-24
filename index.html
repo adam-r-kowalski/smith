@@ -1,282 +1,165 @@
-<!doctype html>
-<html>
-  <head>
-    <title>Smith</title>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script>
-      /**
-       * @typedef {{ row: number, col: number }} Position
-       * @typedef {{ start: Position, end: Position }} Span
-       * @typedef {{ type: string, value: string }} Token
-       * @typedef {{ token: Token, span: Span }} TokenWithSpan
-       * @typedef {{ code: string, pos: Position }} CodeState
-       */
-
-      /**
-       * @param {Position} pos
-       * @param {string} char
-       * @returns {Position}
-       */
-      function advancePosition(pos, char) {
-        if (char === "\n") return { row: pos.row + 1, col: 0 };
-        return { row: pos.row, col: pos.col + 1 };
-      }
-
-      /**
-       * @param {CodeState} state
-       * @returns {[TokenWithSpan|null, CodeState]}
-       */
-      function nextToken(state) {
-        if (!state.code) return [null, state];
-
-        const char = state.code[0];
-        const startPos = state.pos;
-        let nextState = {
-          code: state.code.slice(1),
-          pos: advancePosition(state.pos, char),
-        };
-
-        if (/\s/.test(char)) return nextToken(nextState);
-
-        if (/[+\-*\/]/.test(char)) {
-          return [
-            {
-              token: { type: "operator", value: char },
-              span: { start: startPos, end: nextState.pos },
-            },
-            nextState,
-          ];
-        }
-
-        if (/[\[\]\(\)\{\},:]/.test(char)) {
-          return [
-            {
-              token: { type: "delimiter", value: char },
-              span: { start: startPos, end: nextState.pos },
-            },
-            nextState,
-          ];
-        }
-
-        if (/\d/.test(char)) return readNumber(nextState, char, startPos);
-        if (/[a-zA-Z_]/.test(char)) return readSymbol(nextState, char, startPos);
-
-        return [
-          {
-            token: { type: "invalid", value: char },
-            span: { start: startPos, end: nextState.pos },
-          },
-          nextState,
-        ];
-      }
-
-      /**
-       * @param {CodeState} state
-       * @param {string} initial
-       * @param {Position} startPos
-       * @returns {[TokenWithSpan, CodeState]}
-       */
-      function readNumber(state, initial, startPos) {
-        let value = initial;
-        let currentState = state;
-        let seenDot = false;
-
-        while (currentState.code) {
-          const char = currentState.code[0];
-          if (char === "." && !seenDot) {
-            seenDot = true;
-            value += char;
-          } else if (/\d/.test(char)) {
-            value += char;
-          } else {
-            break;
-          }
-
-          currentState = {
-            code: currentState.code.slice(1),
-            pos: advancePosition(currentState.pos, char),
-          };
-        }
-
-        return [
-          {
-            token: { type: seenDot ? "float" : "int", value },
-            span: { start: startPos, end: currentState.pos },
-          },
-          currentState,
-        ];
-      }
-
-      /**
-       * @param {CodeState} state
-       * @param {string} initial
-       * @param {Position} startPos
-       * @returns {[TokenWithSpan, CodeState]}
-       */
-      function readSymbol(state, initial, startPos) {
-        let value = initial;
-        let currentState = state;
-
-        while (currentState.code) {
-          const char = currentState.code[0];
-          if (!/[\w]/.test(char)) break;
-          value += char;
-          currentState = {
-            code: currentState.code.slice(1),
-            pos: advancePosition(currentState.pos, char),
-          };
-        }
-
-        return [
-          {
-            token: { type: "symbol", value },
-            span: { start: startPos, end: currentState.pos },
-          },
-          currentState,
-        ];
-      }
-
-      /**
-       * @param {string} code
-       * @returns {TokenWithSpan[]}
-       */
-      function tokenize(code) {
-        const tokens = [];
-        let state = { code, pos: { row: 0, col: 0 } };
-
-        while (state.code) {
-          const [token, nextState] = nextToken(state);
-          if (!token) break;
-          tokens.push(token);
-          state = nextState;
-        }
-
-        return tokens;
-      }
-
-      /**
-       * @param {TokenWithSpan[]} tokens
-       * @returns {string}
-       */
-      function formatTokens(tokens) {
-        if (tokens.length === 0) return "[]";
-        const mapped = tokens
-          .map(
-            (t) =>
-              `  {\n    token: ${JSON.stringify(t.token)},\n    span: ${JSON.stringify(t.span)}\n  }`,
-          )
-          .join(",\n");
-        return "[\n" + mapped + "\n]";
-      }
-
-      // Unit tests
-      const tests = [
-        { code: "x + 1", desc: "Simple expression" },
-        { code: "foo(123, 45.67)", desc: "Function call" },
-        { code: "if (x > 0) { return 1 }", desc: "Control flow" },
-        { code: "array[i]", desc: "Array access" },
-        { code: "  spaces  \n and\n\nnewlines  ", desc: "Whitespace handling" },
-      ];
-
-      window.addEventListener("load", (event) => {
-        document.body.innerHTML = `
-          <style>
-            body { font-family: monospace; padding: 20px; }
-            .test { margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; }
-            .code { background: #f0f0f0; padding: 10px; margin: 5px 0; }
-            .tokens { white-space: pre; }
-          </style>
-          ${tests
-            .map(
-              (test) => `
-            <div class="test">
-              <h3>${test.desc}</h3>
-              <div class="code">${test.code}</div>
-              <div class="tokens">${formatTokens(tokenize(test.code))}</div>
-            </div>
-          `,
-            )
-            .join("")}
-        `;
-      });
-    </script>
+    <title>Test Runner</title>
     <style>
-      :root {
-        --background-color: #1e1e2e;
-        --text-color: #e0e0e0;
-        --border-color: #444444;
-        --header-bg: #2a2a3a;
-        --code-bg: #000000;
-        --success-border: #00ff9550;
-        --error-border: #ff000050;
-      }
-
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
-      body {
-        background-color: var(--background-color);
-        color: var(--text-color);
-        font-family: monospace;
-        padding: 1rem;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        margin: 1rem 0;
-        background-color: var(--background-color);
-        border: 1px solid var(--border-color);
-      }
-
-      th {
-        background-color: var(--header-bg);
-        padding: 1rem;
-        text-align: left;
-        font-weight: bold;
-        border-bottom: 2px solid var(--border-color);
-      }
-
-      td {
-        padding: 1rem;
-        border-bottom: 1px solid var(--border-color);
-        vertical-align: top;
-      }
-
-      tr.match {
-        background-color: var(--success-border);
-      }
-
-      tr.mismatch {
-        background-color: var(--error-border);
-      }
-
-      pre {
-        background-color: var(--code-bg);
-        padding: 0.75rem;
-        border-radius: 4px;
-        overflow-x: auto;
-      }
-
-      code {
-        font-family: 'Consolas', 'Monaco', monospace;
-      }
-
-      td:first-child pre {
-        min-width: 80px;
-      }
-
-      td:nth-child(2) pre,
-      td:nth-child(3) pre {
-        min-width: 200px;
-      }
+        body {
+            background-color: #1e1e2e; /* Catppuccin base color */
+            color: #cdd6f4; /* Light text color */
+            font-family: "Fira Code", monospace;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            padding: 20px;
+        }
+        .test-case {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #313244; /* Panel background */
+            border-radius: 8px;
+        }
+        .test-title {
+            font-size: 1.4em;
+            color: #fab387; /* Catppuccin orange */
+            margin-bottom: 10px;
+        }
+        .token-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .token {
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            background-color: #45475a; /* Token background */
+            border-radius: 8px;
+            flex: 1 1 calc(25% - 20px); /* Responsive width */
+            box-sizing: border-box;
+            min-width: 150px;
+            max-width: 300px;
+        }
+        .token.passing {
+            border: 2px solid #a6e3a1; /* Green for passing */
+        }
+        .token.failing {
+            border: 2px solid #f38ba8; /* Pink for failing */
+        }
+        .token-type {
+            font-weight: bold;
+            color: #89b4fa; /* Catppuccin blue */
+        }
+        .token-value {
+            margin: 5px 0;
+            color: #a6e3a1; /* Catppuccin green */
+        }
+        .token-span {
+            font-size: 0.9em;
+            color: #f9e2af; /* Catppuccin yellow */
+        }
     </style>
-  </head>
-  <body>
-  </body>
+</head>
+<body>
+    <div class="container">
+        <!-- Example Test Case: Simple Expression -->
+        <div class="test-case">
+            <div class="test-title">Simple Expression</div>
+            <div class="token-container">
+                <div class="token passing">
+                    <div class="token-type">Symbol</div>
+                    <div class="token-value">x</div>
+                    <div class="token-span">(0, 1)</div>
+                </div>
+                <div class="token passing">
+                    <div class="token-type">Operator</div>
+                    <div class="token-value">+</div>
+                    <div class="token-span">(0, 3)</div>
+                </div>
+                <div class="token passing">
+                    <div class="token-type">Int</div>
+                    <div class="token-value">17</div>
+                    <div class="token-span">(0, 5)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Example Test Case: Function Call -->
+        <div class="test-case">
+            <div class="test-title">Function Call</div>
+            <div class="token-container">
+                <div class="token passing">
+                    <div class="token-type">Symbol</div>
+                    <div class="token-value">foo</div>
+                    <div class="token-span">(0, 3)</div>
+                </div>
+                <div class="token passing">
+                    <div class="token-type">Delimiter</div>
+                    <div class="token-value">(</div>
+                    <div class="token-span">(0, 4)</div>
+                </div>
+                <div class="token passing">
+                    <div class="token-type">Int</div>
+                    <div class="token-value">123</div>
+                    <div class="token-span">(0, 7)</div>
+                </div>
+                <div class="token passing">
+                    <div class="token-type">Delimiter</div>
+                    <div class="token-value">,</div>
+                    <div class="token-span">(0, 8)</div>
+                </div>
+                <div class="token passing">
+                    <div class="token-type">Float</div>
+                    <div class="token-value">45.67</div>
+                    <div class="token-span">(0, 14)</div>
+                </div>
+                <div class="token passing">
+                    <div class="token-type">Delimiter</div>
+                    <div class="token-value">)</div>
+                    <div class="token-span">(0, 15)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Example Test Case: Control Flow -->
+        <div class="test-case">
+            <div class="test-title">Control Flow</div>
+            <div class="token-container">
+                <div class="token passing">
+                    <div class="token-type">Keyword</div>
+                    <div class="token-value">if</div>
+                    <div class="token-span">(0, 2)</div>
+                </div>
+                <div class="token passing">
+                    <div class="token-type">Delimiter</div>
+                    <div class="token-value">(</div>
+                    <div class="token-span">(0, 4)</div>
+                </div>
+                <div class="token failing">
+                    <div class="token-type">Invalid</div>
+                    <div class="token-value">></div>
+                    <div class="token-span">(0, 5)</div>
+                </div>
+                <div class="token passing">
+                    <div class="token-type">Int</div>
+                    <div class="token-value">0</div>
+                    <div class="token-span">(0, 8)</div>
+                </div>
+                <div class="token passing">
+                    <div class="token-type">Delimiter</div>
+                    <div class="token-value">)</div>
+                    <div class="token-span">(0, 9)</div>
+                </div>
+                <div class="token passing">
+                    <div class="token-type">Delimiter</div>
+                    <div class="token-value">{</div>
+                    <div class="token-span">(0, 11)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
 </html>
