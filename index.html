@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -26,6 +25,15 @@
             font-size: 1.4em;
             color: #fab387; /* Catppuccin orange */
             margin-bottom: 10px;
+        }
+        .code-block {
+            background-color: #45475a;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: "Fira Code", monospace;
+            color: #cdd6f4;
+            margin-bottom: 15px;
+            white-space: pre-wrap;
         }
         .token-container {
             display: flex;
@@ -68,6 +76,7 @@
         <!-- Example Test Case: Simple Expression -->
         <div class="test-case">
             <div class="test-title">Simple Expression</div>
+            <div class="code-block">x + 17</div>
             <div class="token-container">
                 <div class="token passing">
                     <div class="token-type">Symbol</div>
@@ -90,6 +99,7 @@
         <!-- Example Test Case: Function Call -->
         <div class="test-case">
             <div class="test-title">Function Call</div>
+            <div class="code-block">foo(123, 45.67)</div>
             <div class="token-container">
                 <div class="token passing">
                     <div class="token-type">Symbol</div>
@@ -127,6 +137,7 @@
         <!-- Example Test Case: Control Flow -->
         <div class="test-case">
             <div class="test-title">Control Flow</div>
+            <div class="code-block">if (x > 0) {</div>
             <div class="token-container">
                 <div class="token passing">
                     <div class="token-type">Keyword</div>
@@ -163,3 +174,4 @@
     </div>
 </body>
 </html>
+
