@@ -47,27 +47,26 @@ input, button, textarea, select {
   background-color: var(--background-color);
   padding: var(--padding);
   border-radius: var(--border-radius);
+  height: 290px;
+  overflow-y: auto;
 }
 
 .failing-section {
   background-color: hsla(0, 65%, 65%, 0.4);
-  width: fit-content;
 }
 
 .test-case {
   background-color: var(--card-background-color);
   padding: var(--padding);
   border-radius: var(--border-radius);
-  width: fit-content;
-  height: fit-content;
   display: flex;
   flex-direction: column;
   gap: var(--gap);
 }
 
 .test-cases {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--gap);
 }
 

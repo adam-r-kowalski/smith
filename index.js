@@ -1,5 +1,4 @@
 /**
- * @typedef {"(" | ")" | "[" | "]" | ","} Delimiter
  * @typedef {number} Row
  * @typedef {number} Col
  * @typedef {[Row, Col]} Pos
@@ -7,8 +6,11 @@
  * @typedef {{ kind: "invalid", value: string, span: Span }} InvalidToken
  * @typedef {{ kind: "symbol", value: string, span: Span }} SymbolToken
  * @typedef {{ kind: "int", value: string, span: Span }} IntToken
+ * @typedef {"(" | ")" | "[" | "]" | "," | ":"} Delimiter
  * @typedef {{ kind: "delimiter", value: Delimiter, span: Span }} DelimiterToken
- * @typedef {InvalidToken | SymbolToken | IntToken | DelimiterToken} Token
+ * @typedef {"*" | "="} Operator
+ * @typedef {{ kind: "operator", value: Operator, span: Span }} OperatorToken
+ * @typedef {InvalidToken | SymbolToken | IntToken | DelimiterToken | OperatorToken} Token
  * @typedef {Token[]} Tokens
  * @typedef {{ code: string, pos: Pos }} Cursor
  */
@@ -195,7 +197,7 @@ function eql(lhs, rhs) {
 /**
  * @param {number} index
  * @param {Token} actual
- * @param {Token} expected
+ * @param {Token | undefined} expected
  * @return {string}
  */
 function viewToken(index, actual, expected) {
@@ -211,6 +213,17 @@ function viewToken(index, actual, expected) {
     `;
   } else {
     const f = "failing-section";
+    if (!expected) {
+      return html`
+        <tr class="${f}">
+          <td>${index}</td>
+          <td>${actual.kind}</td>
+          <td>${actual.value}</td>
+          <td>${actual.span[0]}</td>
+          <td>${actual.span[1]}</td>
+        </li>
+      `;
+    }
     const kind_class = eql(actual.kind, expected.kind) ? "" : f;
     const value_class = eql(actual.value, expected.value) ? "" : f;
     const span_0_class = eql(actual.span[0], expected.span[0]) ? "" : f;
@@ -246,20 +259,22 @@ function viewUnitTest(unitTest) {
     <li class="test-case ${className}">
       <h2>${unitTest.name}</h2>
       <pre><code>${unitTest.code}</code></pre>
-      <table class="tokens">
-        <tr>
-          <th>Index</th>
-          <th>Kind</th>
-          <th>Value</th>
-          <th>Begin</th>
-          <th>End</th>
-        </tr>
-        ${actual
-          .map((actualToken, i) =>
-            viewToken(i, actualToken, unitTest.expected[i]),
-          )
-          .join("")}
-      </table>
+      <section class="tokens">
+        <table>
+          <tr>
+            <th>Index</th>
+            <th>Kind</th>
+            <th>Value</th>
+            <th>Begin</th>
+            <th>End</th>
+          </tr>
+          ${actual
+            .map((actualToken, i) =>
+              viewToken(i, actualToken, unitTest.expected[i]),
+            )
+            .join("")}
+        </table>
+      </section>
     </li>
   `;
 }
@@ -316,6 +331,16 @@ function int(value, begin, end) {
   return { kind: "int", value, span: [begin, end] };
 }
 
+/**
+ * @param {Operator} value
+ * @param {Pos} begin
+ * @param {Pos} end
+ * @return {OperatorToken}
+ */
+function operator(value, begin, end) {
+  return { kind: "operator", value, span: [begin, end] };
+}
+
 runUnitTests([
   {
     name: "Function call",
@@ -332,7 +357,25 @@ runUnitTests([
     ],
   },
   {
-    name: "array",
+    name: "Function Definition",
+    code: "double(x: i32): i32 = x * 2",
+    expected: [
+      symbol("double", [0, 0], [0, 1]),
+      delimiter("(", [0, 2], [0, 3]),
+      symbol("x", [0, 1], [0, 2]),
+      delimiter(":", [0, 2], [0, 3]),
+      symbol("i32", [0, 1], [0, 2]),
+      delimiter(")", [0, 2], [0, 3]),
+      delimiter(":", [0, 2], [0, 3]),
+      symbol("i32", [0, 1], [0, 2]),
+      operator("=", [0, 2], [0, 3]),
+      symbol("x", [0, 1], [0, 2]),
+      operator("*", [0, 2], [0, 3]),
+      int("2", [0, 4], [0, 5]),
+    ],
+  },
+  {
+    name: "Array",
     code: "[1, 2, 3]",
     expected: [
       delimiter("[", [0, 0], [0, 1]),
