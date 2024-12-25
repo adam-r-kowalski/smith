@@ -10,7 +10,9 @@
  * @typedef {{ kind: "delimiter", value: Delimiter, span: Span }} DelimiterToken
  * @typedef {"*" | "="} Operator
  * @typedef {{ kind: "operator", value: Operator, span: Span }} OperatorToken
- * @typedef {InvalidToken | SymbolToken | IntToken | DelimiterToken | OperatorToken} Token
+ * @typedef {"space"} Indent
+ * @typedef {{ kind: "indent", value: Indent, count: number, span: Span }} IndentToken
+ * @typedef {InvalidToken | SymbolToken | IntToken | DelimiterToken | OperatorToken | IndentToken} Token
  * @typedef {Token[]} Tokens
  * @typedef {{ code: string, pos: Pos }} Cursor
  */
@@ -26,8 +28,8 @@ function tokenize(code) {
   let cursor = { code, pos: [0, 0] };
   while (true) {
     cursor = trimCursor(cursor);
-    if (cursor.code.length === 0) break;
     const [token, nextCursor] = nextToken(cursor);
+    if (!token) break;
     cursor = nextCursor;
     tokens.push(token);
   }
@@ -39,7 +41,7 @@ function tokenize(code) {
  * @return bool
  */
 function isSymbolHead(c) {
-  return (c >= "a" && c <= "z") || c == "_";
+  return (c >= "a" && c <= "z") || c === "_";
 }
 
 /**
@@ -76,14 +78,16 @@ function isSymbolTail(c) {
 
 /**
  * @param {Cursor} cursor
- * @return {[Token, Cursor]}
+ * @return {[Token | null, Cursor]}
  */
 function nextToken(cursor) {
+  if (cursor.code.length === 0) return [null, cursor];
   const c = cursor.code[0];
   if (isSymbolHead(c)) return tokenizeSymbol(cursor);
   if (isNumeric(c)) return tokenizeNumber(cursor);
   if (isDelimiter(c)) return tokenizeDelimiter(c, cursor);
   if (isOperator(c)) return tokenizeOperator(c, cursor);
+  if (c === "\n") return tokenizeNewline(cursor);
   return tokenizeInvalid(cursor);
 }
 
@@ -177,6 +181,19 @@ function tokenizeNumber(cursor) {
 
 /**
  * @param {Cursor} cursor
+ * @return {[Token, Cursor]}
+ */
+function tokenizeNewline(cursor) {
+  const [newlines, _2, cursor2] = takeWhile(cursor, (c) => c === "\n");
+  cursor2.pos = [cursor.pos[0] + newlines.length, 0];
+  const [spaces, span, cursor3] = takeWhile(cursor2, (c) => c === " ");
+  /** @type Token */
+  const token = { kind: "indent", value: "space", count: spaces.length, span };
+  return [token, cursor3];
+}
+
+/**
+ * @param {Cursor} cursor
  * @param {number} byCols
  * @return {Cursor}
  */
@@ -222,6 +239,15 @@ function eql(lhs, rhs) {
 }
 
 /**
+ * @param {Token} token
+ * @return {string}
+ */
+function viewTokenValue(token) {
+  if (token.kind !== "indent") return token.value;
+  return `${token.count} ${token.value}${token.count > 1 ? "s" : ""}`;
+}
+
+/**
  * @param {number} index
  * @param {Token} actual
  * @param {Token | undefined} expected
@@ -233,7 +259,7 @@ function viewToken(index, actual, expected) {
       <tr>
         <td>${index}</td>
         <td>${actual.kind}</td>
-        <td>${actual.value}</td>
+        <td>${viewTokenValue(actual)}</td>
         <td>${actual.span[0]}</td>
         <td>${actual.span[1]}</td>
       </li>
@@ -245,7 +271,7 @@ function viewToken(index, actual, expected) {
         <tr class="${f}">
           <td>${index}</td>
           <td>${actual.kind}</td>
-          <td>${actual.value}</td>
+          <td>${viewTokenValue(actual)}</td>
           <td>${actual.span[0]}</td>
           <td>${actual.span[1]}</td>
         </li>
@@ -259,14 +285,14 @@ function viewToken(index, actual, expected) {
       <tr>
         <td>${index}</td>
         <td>${actual.kind}</td>
-        <td>${actual.value}</td>
+        <td>${viewTokenValue(actual)}</td>
         <td>${actual.span[0]}</td>
         <td>${actual.span[1]}</td>
       </tr>
       <tr>
         <td>${index}</td>
         <td class="${kind_class}">${expected.kind}</td>
-        <td class="${value_class}">${expected.value}</td>
+        <td class="${value_class}">${viewTokenValue(expected)}</td>
         <td class="${span_0_class}">${expected.span[0]}</td>
         <td class="${span_1_class}">${expected.span[1]}</td>
       </tr>
@@ -280,7 +306,7 @@ function viewToken(index, actual, expected) {
  */
 function viewUnitTest(unitTest) {
   const actual = tokenize(unitTest.code);
-  const passing = JSON.stringify(actual) === JSON.stringify(unitTest.expected);
+  const passing = eql(actual, unitTest.expected);
   const className = passing ? "passing-test" : "failing-test";
   return html`
     <li class="test-case ${className}">
@@ -368,6 +394,17 @@ function operator(value, begin, end) {
   return { kind: "operator", value, span: [begin, end] };
 }
 
+/**
+ * @param {Indent} value
+ * @param {number} count
+ * @param {Pos} begin
+ * @param {Pos} end
+ * @return {IndentToken}
+ */
+function indent(value, count, begin, end) {
+  return { kind: "indent", value, count, span: [begin, end] };
+}
+
 runUnitTests([
   {
     name: "Function call",
@@ -408,18 +445,23 @@ sum_of_squares(x: i32, y: i32): i32 =
   x * 2
       `.trim(),
     expected: [
-      symbol("double", [0, 0], [0, 1]),
-      delimiter("(", [0, 2], [0, 3]),
-      symbol("x", [0, 1], [0, 2]),
-      delimiter(":", [0, 2], [0, 3]),
-      symbol("i32", [0, 1], [0, 2]),
-      delimiter(")", [0, 2], [0, 3]),
-      delimiter(":", [0, 2], [0, 3]),
-      symbol("i32", [0, 1], [0, 2]),
-      operator("=", [0, 2], [0, 3]),
-      symbol("x", [0, 1], [0, 2]),
-      operator("*", [0, 2], [0, 3]),
-      int("2", [0, 4], [0, 5]),
+      symbol("sum_of_squares", [0, 0], [0, 14]),
+      delimiter("(", [0, 14], [0, 15]),
+      symbol("x", [0, 15], [0, 16]),
+      delimiter(":", [0, 16], [0, 17]),
+      symbol("i32", [0, 18], [0, 21]),
+      delimiter(",", [0, 21], [0, 22]),
+      symbol("y", [0, 23], [0, 24]),
+      delimiter(":", [0, 24], [0, 25]),
+      symbol("i32", [0, 26], [0, 29]),
+      delimiter(")", [0, 29], [0, 30]),
+      delimiter(":", [0, 30], [0, 31]),
+      symbol("i32", [0, 32], [0, 35]),
+      operator("=", [0, 36], [0, 37]),
+      indent("space", 2, [1, 0], [1, 2]),
+      symbol("x", [1, 2], [1, 3]),
+      operator("*", [1, 4], [1, 5]),
+      int("2", [1, 6], [1, 7]),
     ],
   },
   {
