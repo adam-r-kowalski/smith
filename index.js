@@ -44,7 +44,7 @@ function isAlphabetic(c) {
  * @return bool
  */
 function isDelimiter(c) {
-  return c == "(" || c == ",";
+  return c == "(" || c == ")" || c == ",";
 }
 
 /**
@@ -162,17 +162,57 @@ function html(raw, ...substitutions) {
 }
 
 /**
+ * @param {Token} actual
+ * @param {Token} expected
+ * @return {string}
+ */
+function viewToken(actual, expected) {
+  const passing = JSON.stringify(actual) === JSON.stringify(expected);
+  if (passing) {
+    return html`
+      <li class="token">
+        <p>${actual.kind}</p>
+        <p>${actual.value}</p>
+        <p>${actual.span[0]}</p>
+        <p>${actual.span[1]}</p>
+      </li>
+    `;
+  } else {
+    const same_span_1 = actual.span[1] == expected.span[1];
+    return html`
+      <li class="failing">
+        <section class="token">
+          <p>${actual.kind}</p>
+          <p>${actual.value}</p>
+          <p>${actual.span[0]}</p>
+          <p>${actual.span[1]}</p>
+        </section>
+        <section class="token">
+          <p>${expected.kind}</p>
+          <p>${expected.value}</p>
+          <p>${expected.span[0]}</p>
+          <p class="${same_span_1 ? "" : "failing"}">${expected.span[1]}</p>
+        </section>
+      </li>
+    `;
+  }
+}
+
+/**
  * @param {UnitTest} unitTest
  * @return {string}
  */
 function viewUnitTest(unitTest) {
+  const actual = tokenize(unitTest.code);
   return html`
-    <li>
-      <pre>
-        <code>
-          ${unitTest.code}
-        </code>
-      </pre>
+    <li class="test-case">
+      <h2>${unitTest.name}</h2>
+      <pre><code>${unitTest.code}</code></pre>
+      <ol class="tokens">
+        ${actual
+          .map((actualToken, i) => viewToken(actualToken, unitTest.expected[i]))
+          .join("")}
+      </ol>
     </li>
   `;
 }
@@ -183,9 +223,12 @@ function viewUnitTest(unitTest) {
  */
 function viewUnitTests(unitTests) {
   return html`
-    <ul>
-      ${unitTests.map(viewUnitTest)}
-    </ul>
+    <main>
+      <h1>Tokenizer unit tests</h1>
+      <ul>
+        ${unitTests.map(viewUnitTest).join("")}
+      </ul>
+    </main>
   `;
 }
 
@@ -221,7 +264,7 @@ const function_call_test = {
   name: "function call",
   code: "foo(x, y, z)",
   expected: [
-    symbol("foo", [0, 0], [0, 3]),
+    symbol("foo", [0, 0], [0, 4]),
     delimiter("(", [0, 3], [0, 4]),
     symbol("x", [0, 4], [0, 5]),
     delimiter(",", [0, 5], [0, 6]),

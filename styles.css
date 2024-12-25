@@ -1,6 +1,10 @@
 :root {
   --background-color: hsla(230, 15%, 15%, 1);
   --text-color: hsla(220, 100%, 98%, 1);
+  --card-background: hsla(228, 15%, 20%, 1);
+  --border-radius: 0.25rem;
+  --padding: 0.5rem;
+  --gap: 0.5rem;
 }
 
 *, *::before, *::after {
@@ -12,6 +16,7 @@
 html {
   font-size: 16px;
   scroll-behavior: smooth;
+  font-family: monospace;
 }
 
 body {
@@ -20,6 +25,7 @@ body {
   min-height: 100vh;
   text-rendering: optimizeSpeed;
   line-height: 1.5;
+  padding: var(--padding);
 }
 
 img, picture, svg, video {
@@ -29,4 +35,37 @@ img, picture, svg, video {
 
 input, button, textarea, select {
   font: inherit;
+}
+
+.token {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+}
+
+.tokens {
+  background-color: var(--background-color);
+  padding: var(--padding);
+  border-radius: var(--border-radius);
+}
+
+.failing {
+  background-color: hsla(0, 65%, 65%, 0.4);
+  width: fit-content;
+}
+
+.test-case {
+  background-color: var(--card-background);
+  padding: var(--padding);
+  border-radius: var(--border-radius);
+  width: fit-content;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+code {
+  padding: var(--padding);
+  background-color: var(--background-color);
+  border-radius: var(--border-radius);
 }
