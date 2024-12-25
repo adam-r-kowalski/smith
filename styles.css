@@ -66,8 +66,24 @@ input, button, textarea, select {
 
 .test-cases {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(1, 1fr);
   gap: var(--gap);
+}
+
+main {
+  container-type: inline-size;
+}
+
+@container (width > 1000px) {
+  .test-cases {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@container (width > 1400px) {
+  .test-cases {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .failing-test {
@@ -78,7 +94,7 @@ input, button, textarea, select {
   border: 1px solid hsla(142, 65%, 65%, 0.4);
 }
 
-code {
+pre {
   padding: var(--padding);
   background-color: var(--background-color);
   border-radius: var(--border-radius);

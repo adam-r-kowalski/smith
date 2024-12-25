@@ -38,8 +38,8 @@ function tokenize(code) {
  * @param {string} c
  * @return bool
  */
-function isAlphabetic(c) {
-  return c >= "a" && c <= "z";
+function isSymbolHead(c) {
+  return (c >= "a" && c <= "z") || c == "_";
 }
 
 /**
@@ -47,15 +47,31 @@ function isAlphabetic(c) {
  * @return bool
  */
 function isDelimiter(c) {
-  return c == "(" || c == ")" || c == "[" || c == "]" || c == ",";
+  return c == "(" || c == ")" || c == "[" || c == "]" || c == "," || c == ":";
 }
 
 /**
  * @param {string} c
  * @return bool
  */
-function isInt(c) {
+function isOperator(c) {
+  return c == "*" || c == "=";
+}
+
+/**
+ * @param {string} c
+ * @return bool
+ */
+function isNumeric(c) {
   return c >= "0" && c <= "9";
+}
+
+/**
+ * @param {string} c
+ * @return bool
+ */
+function isSymbolTail(c) {
+  return isSymbolHead(c) || isNumeric(c);
 }
 
 /**
@@ -64,16 +80,11 @@ function isInt(c) {
  */
 function nextToken(cursor) {
   const c = cursor.code[0];
-  switch (true) {
-    case isAlphabetic(c):
-      return tokenizeSymbol(cursor);
-    case isDelimiter(c):
-      return tokenizeDelimiter(c, cursor);
-    case isInt(c):
-      return tokenizeInt(cursor);
-    default:
-      return tokenizeInvalid(cursor);
-  }
+  if (isSymbolHead(c)) return tokenizeSymbol(cursor);
+  if (isNumeric(c)) return tokenizeNumber(cursor);
+  if (isDelimiter(c)) return tokenizeDelimiter(c, cursor);
+  if (isOperator(c)) return tokenizeOperator(c, cursor);
+  return tokenizeInvalid(cursor);
 }
 
 /**
@@ -100,7 +111,7 @@ function takeWhile(cursor, predicate) {
  * @return {[Token, Cursor]}
  */
 function tokenizeSymbol(cursor) {
-  const [value, span, nextCursor] = takeWhile(cursor, isAlphabetic);
+  const [value, span, nextCursor] = takeWhile(cursor, isSymbolTail);
   /** @type Token */
   const token = { kind: "symbol", value, span };
   return [token, nextCursor];
@@ -123,6 +134,22 @@ function tokenizeDelimiter(value, cursor) {
 }
 
 /**
+ * @param {Operator} value
+ * @param {Cursor} cursor
+ * @return {[Token, Cursor]}
+ */
+function tokenizeOperator(value, cursor) {
+  const begin = cursor.pos;
+  const nextCursor = advanceCursor(cursor, 1);
+  const end = nextCursor.pos;
+  /** @type Span */
+  const span = [begin, end];
+  /** @type Token */
+  const token = { kind: "operator", value, span };
+  return [token, nextCursor];
+}
+
+/**
  * @param {Cursor} cursor
  * @return {[Token, Cursor]}
  */
@@ -141,8 +168,8 @@ function tokenizeInvalid(cursor) {
  * @param {Cursor} cursor
  * @return {[Token, Cursor]}
  */
-function tokenizeInt(cursor) {
-  const [value, span, nextCursor] = takeWhile(cursor, isInt);
+function tokenizeNumber(cursor) {
+  const [value, span, nextCursor] = takeWhile(cursor, isNumeric);
   /** @type Token */
   const token = { kind: "int", value, span };
   return [token, nextCursor];
@@ -357,8 +384,29 @@ runUnitTests([
     ],
   },
   {
-    name: "Function Definition",
+    name: "Function definition",
     code: "double(x: i32): i32 = x * 2",
+    expected: [
+      symbol("double", [0, 0], [0, 6]),
+      delimiter("(", [0, 6], [0, 7]),
+      symbol("x", [0, 7], [0, 8]),
+      delimiter(":", [0, 8], [0, 9]),
+      symbol("i32", [0, 10], [0, 13]),
+      delimiter(")", [0, 13], [0, 14]),
+      delimiter(":", [0, 14], [0, 15]),
+      symbol("i32", [0, 16], [0, 19]),
+      operator("=", [0, 20], [0, 21]),
+      symbol("x", [0, 22], [0, 23]),
+      operator("*", [0, 24], [0, 25]),
+      int("2", [0, 26], [0, 27]),
+    ],
+  },
+  {
+    name: "Multi line function definition",
+    code: `
+sum_of_squares(x: i32, y: i32): i32 =
+  x * 2
+      `.trim(),
     expected: [
       symbol("double", [0, 0], [0, 1]),
       delimiter("(", [0, 2], [0, 3]),
