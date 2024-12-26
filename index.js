@@ -8,7 +8,7 @@
  * @typedef {{ kind: "int", value: string, span: Span }} IntToken
  * @typedef {"(" | ")" | "[" | "]" | "," | ":"} Delimiter
  * @typedef {{ kind: "delimiter", value: Delimiter, span: Span }} DelimiterToken
- * @typedef {"*" | "="} Operator
+ * @typedef {"*" | "+" | "="} Operator
  * @typedef {{ kind: "operator", value: Operator, span: Span }} OperatorToken
  * @typedef {"space"} Indent
  * @typedef {{ kind: "indent", value: Indent, count: number, span: Span }} IndentToken
@@ -49,7 +49,9 @@ function isSymbolHead(c) {
  * @return bool
  */
 function isDelimiter(c) {
-  return c == "(" || c == ")" || c == "[" || c == "]" || c == "," || c == ":";
+  return (
+    c === "(" || c === ")" || c === "[" || c === "]" || c === "," || c === ":"
+  );
 }
 
 /**
@@ -57,7 +59,7 @@ function isDelimiter(c) {
  * @return bool
  */
 function isOperator(c) {
-  return c == "*" || c == "=";
+  return c === "*" || c === "+" || c === "=";
 }
 
 /**
@@ -407,6 +409,26 @@ function indent(value, count, begin, end) {
 
 runUnitTests([
   {
+    name: "Variable definition",
+    code: "x = 42",
+    expected: [
+      symbol("x", [0, 0], [0, 1]),
+      operator("=", [0, 2], [0, 3]),
+      int("42", [0, 4], [0, 6]),
+    ],
+  },
+  {
+    name: "Variable definition with explicit type",
+    code: "x: i32 = 42",
+    expected: [
+      symbol("x", [0, 0], [0, 1]),
+      delimiter(":", [0, 1], [0, 2]),
+      symbol("i32", [0, 3], [0, 6]),
+      operator("=", [0, 7], [0, 8]),
+      int("42", [0, 9], [0, 11]),
+    ],
+  },
+  {
     name: "Function call",
     code: "foo(x, y, z)",
     expected: [
@@ -442,8 +464,10 @@ runUnitTests([
     name: "Multi line function definition",
     code: `
 sum_of_squares(x: i32, y: i32): i32 =
-  x * 2
-      `.trim(),
+  x2 = x * x
+  y2 = y * y
+  x2 + y2
+    `.trim(),
     expected: [
       symbol("sum_of_squares", [0, 0], [0, 14]),
       delimiter("(", [0, 14], [0, 15]),
@@ -459,9 +483,21 @@ sum_of_squares(x: i32, y: i32): i32 =
       symbol("i32", [0, 32], [0, 35]),
       operator("=", [0, 36], [0, 37]),
       indent("space", 2, [1, 0], [1, 2]),
-      symbol("x", [1, 2], [1, 3]),
-      operator("*", [1, 4], [1, 5]),
-      int("2", [1, 6], [1, 7]),
+      symbol("x2", [1, 2], [1, 4]),
+      operator("=", [1, 5], [1, 6]),
+      symbol("x", [1, 7], [1, 8]),
+      operator("*", [1, 9], [1, 10]),
+      symbol("x", [1, 11], [1, 12]),
+      indent("space", 2, [2, 0], [2, 2]),
+      symbol("y2", [2, 2], [2, 4]),
+      operator("=", [2, 5], [2, 6]),
+      symbol("y", [2, 7], [2, 8]),
+      operator("*", [2, 9], [2, 10]),
+      symbol("y", [2, 11], [2, 12]),
+      indent("space", 2, [3, 0], [3, 2]),
+      symbol("x2", [3, 2], [3, 4]),
+      operator("+", [3, 5], [3, 6]),
+      symbol("y2", [3, 7], [3, 9]),
     ],
   },
   {
@@ -475,6 +511,29 @@ sum_of_squares(x: i32, y: i32): i32 =
       delimiter(",", [0, 5], [0, 6]),
       int("3", [0, 7], [0, 8]),
       delimiter("]", [0, 8], [0, 9]),
+    ],
+  },
+  {
+    name: "Multi line array",
+    code: `
+[
+  1,
+  2,
+  3
+]
+    `.trim(),
+    expected: [
+      delimiter("[", [0, 0], [0, 1]),
+      indent("space", 2, [1, 0], [1, 2]),
+      int("1", [1, 2], [1, 3]),
+      delimiter(",", [1, 3], [1, 4]),
+      indent("space", 2, [2, 0], [2, 2]),
+      int("2", [2, 2], [2, 3]),
+      delimiter(",", [2, 3], [2, 4]),
+      indent("space", 2, [3, 0], [3, 2]),
+      int("3", [3, 2], [3, 3]),
+      indent("space", 0, [4, 0], [4, 0]),
+      delimiter("]", [4, 0], [4, 1]),
     ],
   },
 ]);
