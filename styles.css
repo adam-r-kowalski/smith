@@ -47,8 +47,6 @@ input, button, textarea, select {
   background-color: var(--background-color);
   padding: var(--padding);
   border-radius: var(--border-radius);
-  height: 290px;
-  overflow-y: auto;
 }
 
 .failing-section {
@@ -62,6 +60,8 @@ input, button, textarea, select {
   display: flex;
   flex-direction: column;
   gap: var(--gap);
+  height: 240px;
+  overflow-y: auto;
 }
 
 .test-cases {

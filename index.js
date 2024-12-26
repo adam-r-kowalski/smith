@@ -41,7 +41,7 @@ function tokenize(code) {
  * @return bool
  */
 function isSymbolHead(c) {
-  return (c >= "a" && c <= "z") || c === "_";
+  return (c >= "a" && c <= "z") || (c >= "A" && c <= "Z") || c === "_";
 }
 
 /**
@@ -534,6 +534,30 @@ sum_of_squares(x: i32, y: i32): i32 =
       int("3", [3, 2], [3, 3]),
       indent("space", 0, [4, 0], [4, 0]),
       delimiter("]", [4, 0], [4, 1]),
+    ],
+  },
+  {
+    name: "Valid symbols",
+    code: `
+snake_case
+camelCase
+PascalCase
+_leading_underscore
+trailing_underscore_
+trailing_numbers123
+`.trim(),
+    expected: [
+      symbol("snake_case", [0, 0], [0, 10]),
+      indent("space", 0, [1, 0], [1, 0]),
+      symbol("camelCase", [1, 0], [1, 9]),
+      indent("space", 0, [2, 0], [2, 0]),
+      symbol("PascalCase", [2, 0], [2, 10]),
+      indent("space", 0, [3, 0], [3, 0]),
+      symbol("_leading_underscore", [3, 0], [3, 19]),
+      indent("space", 0, [4, 0], [4, 0]),
+      symbol("trailing_underscore_", [4, 0], [4, 20]),
+      indent("space", 0, [5, 0], [5, 0]),
+      symbol("trailing_numbers123", [5, 0], [5, 19]),
     ],
   },
 ]);
