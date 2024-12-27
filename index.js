@@ -6,13 +6,22 @@
  * @typedef {{ kind: "invalid", value: string, span: Span }} InvalidToken
  * @typedef {{ kind: "symbol", value: string, span: Span }} SymbolToken
  * @typedef {{ kind: "int", value: string, span: Span }} IntToken
+ * @typedef {{ kind: "float", value: string, span: Span }} FloatToken
  * @typedef {"(" | ")" | "[" | "]" | "," | ":"} Delimiter
  * @typedef {{ kind: "delimiter", value: Delimiter, span: Span }} DelimiterToken
  * @typedef {"*" | "+" | "="} Operator
  * @typedef {{ kind: "operator", value: Operator, span: Span }} OperatorToken
  * @typedef {"space"} Indent
  * @typedef {{ kind: "indent", value: Indent, count: number, span: Span }} IndentToken
- * @typedef {InvalidToken | SymbolToken | IntToken | DelimiterToken | OperatorToken | IndentToken} Token
+ * @typedef {
+     InvalidToken
+   | SymbolToken
+   | IntToken
+   | FloatToken
+   | DelimiterToken
+   | OperatorToken
+   | IndentToken
+ * } Token
  * @typedef {Token[]} Tokens
  * @typedef {{ code: string, pos: Pos }} Cursor
  */
@@ -86,7 +95,7 @@ function nextToken(cursor) {
   if (cursor.code.length === 0) return [null, cursor];
   const c = cursor.code[0];
   if (isSymbolHead(c)) return tokenizeSymbol(cursor);
-  if (isNumeric(c)) return tokenizeNumber(cursor);
+  if (isNumeric(c) || c == ".") return tokenizeNumber(cursor);
   if (isDelimiter(c)) return tokenizeDelimiter(c, cursor);
   if (isOperator(c)) return tokenizeOperator(c, cursor);
   if (c === "\n") return tokenizeNewline(cursor);
@@ -110,6 +119,30 @@ function takeWhile(cursor, predicate) {
   /** @type Span */
   const span = [begin, end];
   return [code.slice(0, i), span, nextCursor];
+}
+
+/**
+ * @template State
+ * @param {Cursor} cursor
+ * @param {State} state
+ * @param {(c: string, state: State) => [boolean, state]} predicate
+ * @return {[string, Span, Cursor, State]}
+ */
+function takeWhileStatefull(cursor, state, predicate) {
+  const begin = cursor.pos;
+  let i = 0;
+  const code = cursor.code;
+  while (code.length > i) {
+    const [passed, nextState] = predicate(code[i], state);
+    if (!passed) break;
+    state = nextState;
+    i += 1;
+  }
+  const nextCursor = advanceCursor(cursor, i);
+  const end = nextCursor.pos;
+  /** @type Span */
+  const span = [begin, end];
+  return [code.slice(0, i), span, nextCursor, state];
 }
 
 /**
@@ -175,9 +208,14 @@ function tokenizeInvalid(cursor) {
  * @return {[Token, Cursor]}
  */
 function tokenizeNumber(cursor) {
-  const [value, span, nextCursor] = takeWhile(cursor, isNumeric);
+  /** @type (c: string, seen: boolean) => [boolean, boolean] */
+  const p = (c, seen) => {
+    if (c === ".") return [!seen, true];
+    return [isNumeric(c), seen];
+  };
+  const [value, span, nextCursor, seen] = takeWhileStatefull(cursor, false, p);
   /** @type Token */
-  const token = { kind: "int", value, span };
+  const token = { kind: seen ? "float" : "int", value, span };
   return [token, nextCursor];
 }
 
@@ -387,6 +425,16 @@ function int(value, begin, end) {
 }
 
 /**
+ * @param {string} value
+ * @param {Pos} begin
+ * @param {Pos} end
+ * @return {FloatToken}
+ */
+function float(value, begin, end) {
+  return { kind: "float", value, span: [begin, end] };
+}
+
+/**
  * @param {Operator} value
  * @param {Pos} begin
  * @param {Pos} end
@@ -558,6 +606,27 @@ trailing_numbers123
       symbol("trailing_underscore_", [4, 0], [4, 20]),
       indent("space", 0, [5, 0], [5, 0]),
       symbol("trailing_numbers123", [5, 0], [5, 19]),
+    ],
+  },
+  {
+    name: "Valid numbers",
+    code: `
+42
+3.14
+0.25
+.24
+0
+`.trim(),
+    expected: [
+      int("42", [0, 0], [0, 2]),
+      indent("space", 0, [1, 0], [1, 0]),
+      float("3.14", [1, 0], [1, 4]),
+      indent("space", 0, [2, 0], [2, 0]),
+      float("0.25", [2, 0], [2, 4]),
+      indent("space", 0, [3, 0], [3, 0]),
+      float(".24", [3, 0], [3, 3]),
+      indent("space", 0, [4, 0], [4, 0]),
+      int("0", [4, 0], [4, 1]),
     ],
   },
 ]);
