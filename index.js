@@ -9,7 +9,7 @@
  * @typedef {{ kind: "float", value: string, span: Span }} FloatToken
  * @typedef {"(" | ")" | "[" | "]" | "," | ":"} Delimiter
  * @typedef {{ kind: "delimiter", value: Delimiter, span: Span }} DelimiterToken
- * @typedef {"*" | "+" | "="} Operator
+ * @typedef {"+" | "-" | "*" | "/" | "=" | "."} Operator
  * @typedef {{ kind: "operator", value: Operator, span: Span }} OperatorToken
  * @typedef {"space"} Indent
  * @typedef {{ kind: "indent", value: Indent, count: number, span: Span }} IndentToken
@@ -68,7 +68,9 @@ function isDelimiter(c) {
  * @return bool
  */
 function isOperator(c) {
-  return c === "*" || c === "+" || c === "=";
+  return (
+    c === "+" || c === "-" || c === "*" || c === "/" || c === "=" || c === "."
+  );
 }
 
 /**
@@ -205,6 +207,15 @@ function tokenizeInvalid(cursor) {
 
 /**
  * @param {Cursor} cursor
+ * @return {string}
+ */
+function peek(cursor) {
+  if (cursor.code.length === 0) return "";
+  return cursor.code[0];
+}
+
+/**
+ * @param {Cursor} cursor
  * @return {[Token, Cursor]}
  */
 function tokenizeNumber(cursor) {
@@ -214,9 +225,23 @@ function tokenizeNumber(cursor) {
     return [isNumeric(c), seen];
   };
   const [value, span, nextCursor, seen] = takeWhileStatefull(cursor, false, p);
-  /** @type Token */
-  const token = { kind: seen ? "float" : "int", value, span };
-  return [token, nextCursor];
+  if (seen) {
+    if (value.length === 1) {
+      return [{ kind: "operator", value: ".", span }, nextCursor];
+    }
+    if (value[value.length - 1] === "." && isSymbolHead(peek(nextCursor))) {
+      const nextValue = value.slice(0, value.length - 1);
+      const begin = cursor.pos;
+      const nextCursor2 = advanceCursor(cursor, nextValue.length);
+      const end = nextCursor2.pos;
+      return [
+        { kind: "int", value: nextValue, span: [begin, end] },
+        nextCursor2,
+      ];
+    }
+    return [{ kind: "float", value, span }, nextCursor];
+  }
+  return [{ kind: "int", value, span }, nextCursor];
 }
 
 /**
@@ -610,23 +635,49 @@ trailing_numbers123
   },
   {
     name: "Valid numbers",
-    code: `
-42
-3.14
-0.25
-.24
-0
-`.trim(),
+    code: "42 3.14 0.25 .24 0",
     expected: [
       int("42", [0, 0], [0, 2]),
-      indent("space", 0, [1, 0], [1, 0]),
-      float("3.14", [1, 0], [1, 4]),
-      indent("space", 0, [2, 0], [2, 0]),
-      float("0.25", [2, 0], [2, 4]),
-      indent("space", 0, [3, 0], [3, 0]),
-      float(".24", [3, 0], [3, 3]),
-      indent("space", 0, [4, 0], [4, 0]),
-      int("0", [4, 0], [4, 1]),
+      float("3.14", [0, 3], [0, 7]),
+      float("0.25", [0, 8], [0, 12]),
+      float(".24", [0, 13], [0, 16]),
+      int("0", [0, 17], [0, 18]),
+    ],
+  },
+  {
+    name: "Valid operators",
+    code: "+ - * / = .".trim(),
+    expected: [
+      operator("+", [0, 0], [0, 1]),
+      operator("-", [0, 2], [0, 3]),
+      operator("*", [0, 4], [0, 5]),
+      operator("/", [0, 6], [0, 7]),
+      operator("=", [0, 8], [0, 9]),
+      operator(".", [0, 10], [0, 11]),
+    ],
+  },
+  {
+    name: "Float uniform function call syntax",
+    code: "3.14.min(5.38)".trim(),
+    expected: [
+      float("3.14", [0, 0], [0, 4]),
+      operator(".", [0, 4], [0, 5]),
+      symbol("min", [0, 5], [0, 8]),
+      delimiter("(", [0, 8], [0, 9]),
+      float("5.38", [0, 9], [0, 13]),
+      delimiter(")", [0, 13], [0, 14]),
+    ],
+  },
+  {
+    name: "Int uniform function call syntax",
+    code: "3.max(10)".trim(),
+    expected: [
+      int("3", [0, 0], [0, 1]),
+      operator(".", [0, 1], [0, 2]),
+      symbol("max", [0, 2], [0, 5]),
+      delimiter("(", [0, 5], [0, 6]),
+      int("10", [0, 6], [0, 8]),
+      delimiter(")", [0, 8], [0, 9]),
     ],
   },
 ]);
