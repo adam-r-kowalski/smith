@@ -7,10 +7,11 @@
  * @typedef {{ kind: "symbol", value: string, span: Span }} SymbolToken
  * @typedef {{ kind: "int", value: string, span: Span }} IntToken
  * @typedef {{ kind: "float", value: string, span: Span }} FloatToken
- * @typedef {"(" | ")" | "[" | "]" | "," | ":"} Delimiter
+ * @typedef {"(" | ")" | "[" | "]" | "{" | "}" | "," | ":"} Delimiter
  * @typedef {{ kind: "delimiter", value: Delimiter, span: Span }} DelimiterToken
  * @typedef {"+" | "-" | "*" | "/" | "=" | "."} Operator
  * @typedef {{ kind: "operator", value: Operator, span: Span }} OperatorToken
+ * @typedef {{ kind: "string", value: string, span: Span }} StringToken
  * @typedef {"space"} Indent
  * @typedef {{ kind: "indent", value: Indent, count: number, span: Span }} IndentToken
  * @typedef {
@@ -20,6 +21,7 @@
    | FloatToken
    | DelimiterToken
    | OperatorToken
+   | StringToken
    | IndentToken
  * } Token
  * @typedef {Token[]} Tokens
@@ -59,7 +61,14 @@ function isSymbolHead(c) {
  */
 function isDelimiter(c) {
   return (
-    c === "(" || c === ")" || c === "[" || c === "]" || c === "," || c === ":"
+    c === "(" ||
+    c === ")" ||
+    c === "[" ||
+    c === "]" ||
+    c === "{" ||
+    c === "}" ||
+    c === "," ||
+    c === ":"
   );
 }
 
@@ -100,6 +109,7 @@ function nextToken(cursor) {
   if (isNumeric(c) || c == ".") return tokenizeNumber(cursor);
   if (isDelimiter(c)) return tokenizeDelimiter(c, cursor);
   if (isOperator(c)) return tokenizeOperator(c, cursor);
+  if (c === '"') return tokenizeString(cursor);
   if (c === "\n") return tokenizeNewline(cursor);
   return tokenizeInvalid(cursor);
 }
@@ -188,6 +198,23 @@ function tokenizeOperator(value, cursor) {
   /** @type Token */
   const token = { kind: "operator", value, span };
   return [token, nextCursor];
+}
+
+/**
+ * @param {Cursor} cursor
+ * @return {[Token, Cursor]}
+ */
+function tokenizeString(cursor) {
+  const begin = cursor.pos;
+  const cursor2 = advanceCursor(cursor, 1);
+  const [value, _, cursor3] = takeWhile(cursor2, (c) => c !== '"');
+  const cursor4 = advanceCursor(cursor3, 1);
+  const end = cursor4.pos;
+  /** @type Span */
+  const span = [begin, end];
+  /** @type Token */
+  const token = { kind: "string", value, span };
+  return [token, cursor4];
 }
 
 /**
@@ -343,7 +370,9 @@ function viewToken(index, actual, expected) {
       `;
     }
     const kind_class = eql(actual.kind, expected.kind) ? "" : f;
-    const value_class = eql(actual.value, expected.value) ? "" : f;
+    const value_class = eql(viewTokenValue(actual), viewTokenValue(expected))
+      ? ""
+      : f;
     const span_0_class = eql(actual.span[0], expected.span[0]) ? "" : f;
     const span_1_class = eql(actual.span[1], expected.span[1]) ? "" : f;
     return html`
@@ -470,6 +499,16 @@ function operator(value, begin, end) {
 }
 
 /**
+ * @param {String} value
+ * @param {Pos} begin
+ * @param {Pos} end
+ * @return {StringToken}
+ */
+function string(value, begin, end) {
+  return { kind: "string", value, span: [begin, end] };
+}
+
+/**
  * @param {Indent} value
  * @param {number} count
  * @param {Pos} begin
@@ -574,7 +613,7 @@ sum_of_squares(x: i32, y: i32): i32 =
     ],
   },
   {
-    name: "Array",
+    name: "Array literal",
     code: "[1, 2, 3]",
     expected: [
       delimiter("[", [0, 0], [0, 1]),
@@ -587,7 +626,7 @@ sum_of_squares(x: i32, y: i32): i32 =
     ],
   },
   {
-    name: "Multi line array",
+    name: "Multi line array literal",
     code: `
 [
   1,
@@ -678,6 +717,29 @@ trailing_numbers123
       delimiter("(", [0, 5], [0, 6]),
       int("10", [0, 6], [0, 8]),
       delimiter(")", [0, 8], [0, 9]),
+    ],
+  },
+  {
+    name: "Map literal",
+    code: `
+{
+  name: "Joe",
+  age: 42
+}
+    `.trim(),
+    expected: [
+      delimiter("{", [0, 0], [0, 1]),
+      indent("space", 2, [1, 0], [1, 2]),
+      symbol("name", [1, 2], [1, 6]),
+      delimiter(":", [1, 6], [1, 7]),
+      string("Joe", [1, 8], [1, 13]),
+      delimiter(",", [1, 13], [1, 14]),
+      indent("space", 2, [2, 0], [2, 2]),
+      symbol("age", [2, 2], [2, 5]),
+      delimiter(":", [2, 5], [2, 6]),
+      int("42", [2, 7], [2, 9]),
+      indent("space", 0, [3, 0], [3, 0]),
+      delimiter("}", [3, 0], [3, 1]),
     ],
   },
 ]);
